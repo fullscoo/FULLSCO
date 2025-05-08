@@ -116,7 +116,7 @@ export function MenusProvider({ children }: { children: ReactNode }) {
         const [headerResponse, footerResponse, footerSecondaryResponse] = await Promise.all([
           fetch('/api/menus?location=header'),
           fetch('/api/menus?location=footer'),
-          fetch('/api/menus?location=footer_secondary')
+          fetch('/api/menus?location=footer-secondary')
         ]);
         
         // معالجة بيانات قائمة الهيدر
