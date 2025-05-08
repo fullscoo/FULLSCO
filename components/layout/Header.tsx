@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Menu, X, ChevronDown, Sun, Moon, Search, User, LogIn, Bookmark, Bell, BookOpen, Home, Award, FileText, School, MessageSquare, ExternalLink } from 'lucide-react';
 import { useSiteSettings } from '../../contexts/site-settings-context';
+import { useMenus } from '../../contexts/menus-context';
 import { useMobile } from '../../hooks/use-mobile';
 
 // تخزين الأيقونات المناسبة لكل نوع من أنواع القوائم
@@ -19,6 +20,7 @@ const menuTypeIcons: Record<string, any> = {
 
 export default function Header() {
   const { siteSettings } = useSiteSettings();
+  const { headerMenu, isLoading: isMenuLoading } = useMenus();
   const router = useRouter();
   const isMobile = useMobile();
   
@@ -30,9 +32,6 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [menuData, setMenuData] = useState<any[]>([]);
-  const [isMenuLoading, setIsMenuLoading] = useState(true);
-  const [menuError, setMenuError] = useState<string | null>(null);
   
   // التحقق من وضع العرض (فاتح/داكن) عند تحميل الصفحة
   useEffect(() => {
@@ -103,40 +102,6 @@ export default function Header() {
     setIsSearchOpen(false);
     setIsUserMenuOpen(false);
   }, [router.pathname]);
-  
-  // جلب بيانات القائمة من الخادم
-  useEffect(() => {
-    const fetchMenu = async () => {
-      setIsMenuLoading(true);
-      setMenuError(null);
-      
-      try {
-        const response = await fetch('/api/menus?location=header');
-        
-        if (!response.ok) {
-          throw new Error('فشل في جلب بيانات القائمة');
-        }
-        
-        const data = await response.json();
-        
-        if (data.menuItems && Array.isArray(data.menuItems)) {
-          setMenuData(data.menuItems);
-        } else {
-          // استخدام القائمة الافتراضية في حالة عدم وجود بيانات
-          setMenuData(defaultMenuItems);
-        }
-      } catch (error) {
-        console.error('فشل في جلب بيانات القائمة:', error);
-        setMenuError('حدث خطأ أثناء جلب بيانات القائمة');
-        // استخدام القائمة الافتراضية في حالة حدوث خطأ
-        setMenuData(defaultMenuItems);
-      } finally {
-        setIsMenuLoading(false);
-      }
-    };
-    
-    fetchMenu();
-  }, []);
   
   // معالجة البحث
   const handleSearch = (e: React.FormEvent) => {
@@ -217,7 +182,7 @@ export default function Header() {
           
           {/* القائمة الرئيسية - سطح المكتب */}
           <nav className="hidden lg:flex items-center space-x-1 rtl:space-x-reverse">
-            {menuData.map((item, index) => (
+            {headerMenu.map((item, index) => (
               item.children && item.children.length > 0 ? (
                 <div key={index} className="relative group">
                   <button className="flex items-center px-4 py-2 text-base font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200">
@@ -246,10 +211,10 @@ export default function Header() {
               ) : (
                 <Link 
                   key={index} 
-                  href={item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`}
+                  href={item.type === 'link' ? (item.url || '/') : `/${item.type}s/${item.slug || ''}`}
                   className={`px-4 py-2 text-base font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 ${
                     (item.type === 'link' && router.pathname === item.url) || 
-                    (item.type === 'link' && item.url !== '/' && router.pathname.startsWith(item.url))
+                    (item.type === 'link' && item.url && item.url !== '/' && router.pathname.startsWith(item.url))
                       ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 font-semibold' 
                       : 'text-gray-700 dark:text-gray-200'
                   }`}
@@ -421,7 +386,7 @@ export default function Header() {
               )}
               
               <div className="py-2">
-                {menuData.map((item: any, index: number) => (
+                {headerMenu.map((item: any, index: number) => (
                   item.children && item.children.length > 0 ? (
                     <div key={index} className="py-2 px-4 border-b border-gray-200 dark:border-gray-700">
                       <div className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1.5">
@@ -450,10 +415,10 @@ export default function Header() {
                   ) : (
                     <Link 
                       key={index} 
-                      href={item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`}
+                      href={item.type === 'link' ? (item.url || '/') : `/${item.type}s/${item.slug || ''}`}
                       className={`py-3 px-4 flex items-center gap-1.5 border-b border-gray-200 dark:border-gray-700 ${
                         (item.type === 'link' && router.pathname === item.url) || 
-                        (item.type === 'link' && item.url !== '/' && router.pathname.startsWith(item.url))
+                        (item.type === 'link' && item.url && item.url !== '/' && router.pathname.startsWith(item.url))
                           ? 'font-semibold text-blue-600 dark:text-blue-400'
                           : 'text-gray-900 dark:text-white'
                       }`}

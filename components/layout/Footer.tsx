@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useSiteSettings } from '@/contexts/site-settings-context';
+import { useMenus } from '@/contexts/menus-context';
 import { Mail, Phone, MapPin, Heart, BookOpen, User, School, Award, ShieldCheck, HelpCircle, FileText, Home, MessageSquare, LogIn, ExternalLink } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 // تخزين الأيقونات المناسبة لكل نوع من أنواع القوائم
 const menuTypeIcons: Record<string, any> = {
@@ -17,15 +17,10 @@ const menuTypeIcons: Record<string, any> = {
 
 export default function Footer() {
   const { siteSettings } = useSiteSettings();
+  const { footerMainMenu, footerSecondaryMenu, isLoading: isMenuLoading } = useMenus();
   
   // الحصول على السنة الحالية
   const currentYear = new Date().getFullYear();
-  
-  // حالة قوائم الفوتر
-  const [mainFooterMenu, setMainFooterMenu] = useState<any[]>([]);
-  const [secondaryFooterMenu, setSecondaryFooterMenu] = useState<any[]>([]);
-  const [isMenuLoading, setIsMenuLoading] = useState<boolean>(true);
-  const [menuError, setMenuError] = useState<string | null>(null);
   
   // القوائم الافتراضية في حالة عدم وجود بيانات
   const defaultMainFooterMenu = [
@@ -43,49 +38,6 @@ export default function Footer() {
     { id: 4, title: 'الأسئلة الشائعة', type: 'link', url: '/faq', icon: HelpCircle },
     { id: 5, title: 'تسجيل الدخول', type: 'link', url: '/auth/login', icon: LogIn }
   ];
-  
-  // جلب بيانات القوائم من الخادم
-  useEffect(() => {
-    const fetchFooterMenus = async () => {
-      setIsMenuLoading(true);
-      setMenuError(null);
-      
-      try {
-        // جلب القائمة الرئيسية للفوتر
-        const mainResponse = await fetch('/api/menus?location=footer');
-        const mainData = await mainResponse.json();
-        
-        if (mainData.menuItems && Array.isArray(mainData.menuItems)) {
-          setMainFooterMenu(mainData.menuItems);
-        } else {
-          // استخدام القائمة الافتراضية في حالة عدم وجود بيانات
-          setMainFooterMenu(defaultMainFooterMenu);
-        }
-        
-        // جلب القائمة الثانوية للفوتر
-        const secondaryResponse = await fetch('/api/menus?location=footer_secondary');
-        const secondaryData = await secondaryResponse.json();
-        
-        if (secondaryData.menuItems && Array.isArray(secondaryData.menuItems)) {
-          setSecondaryFooterMenu(secondaryData.menuItems);
-        } else {
-          // استخدام القائمة الافتراضية في حالة عدم وجود بيانات
-          setSecondaryFooterMenu(defaultSecondaryFooterMenu);
-        }
-      } catch (error) {
-        console.error('فشل في جلب بيانات القوائم:', error);
-        setMenuError('حدث خطأ أثناء جلب بيانات القوائم');
-        
-        // استخدام القوائم الافتراضية في حالة حدوث خطأ
-        setMainFooterMenu(defaultMainFooterMenu);
-        setSecondaryFooterMenu(defaultSecondaryFooterMenu);
-      } finally {
-        setIsMenuLoading(false);
-      }
-    };
-    
-    fetchFooterMenus();
-  }, []);
   
   return (
     <footer className="bg-slate-900 dark:bg-gray-950 text-white border-t border-slate-800/50 dark:border-gray-800/50">
@@ -198,7 +150,7 @@ export default function Footer() {
               <div>
                 <h3 className="text-lg font-bold text-white mb-4">روابط سريعة</h3>
                 <ul className="space-y-2">
-                  {!isMenuLoading && mainFooterMenu.map((item: any, index: number) => {
+                  {!isMenuLoading && footerMainMenu.map((item: any, index: number) => {
                     // تحديد الأيقونة المناسبة ورابط الوجهة
                     const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
                     const href = item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`;
@@ -217,14 +169,28 @@ export default function Footer() {
                   })}
                   
                   {/* في حالة تحميل البيانات، نعرض عناصر وهمية */}
-                  {isMenuLoading && defaultMainFooterMenu.map((item, index) => (
-                    <li key={index} className="animate-pulse">
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
-                        <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
-                      </div>
-                    </li>
-                  ))}
+                  {isMenuLoading && (
+                    <>
+                      <li className="animate-pulse">
+                        <div className="flex items-center">
+                          <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                          <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                        </div>
+                      </li>
+                      <li className="animate-pulse">
+                        <div className="flex items-center">
+                          <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                          <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                        </div>
+                      </li>
+                      <li className="animate-pulse">
+                        <div className="flex items-center">
+                          <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                          <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                        </div>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
               
@@ -232,7 +198,7 @@ export default function Footer() {
               <div>
                 <h3 className="text-lg font-bold text-white mb-4">روابط مفيدة</h3>
                 <ul className="space-y-2">
-                  {!isMenuLoading && secondaryFooterMenu.map((item: any, index: number) => {
+                  {!isMenuLoading && footerSecondaryMenu.map((item: any, index: number) => {
                     // تحديد الأيقونة المناسبة ورابط الوجهة
                     const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
                     const href = item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`;
@@ -251,14 +217,28 @@ export default function Footer() {
                   })}
                   
                   {/* في حالة تحميل البيانات، نعرض عناصر وهمية */}
-                  {isMenuLoading && defaultSecondaryFooterMenu.map((item, index) => (
-                    <li key={index} className="animate-pulse">
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
-                        <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
-                      </div>
-                    </li>
-                  ))}
+                  {isMenuLoading && (
+                    <>
+                      <li className="animate-pulse">
+                        <div className="flex items-center">
+                          <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                          <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                        </div>
+                      </li>
+                      <li className="animate-pulse">
+                        <div className="flex items-center">
+                          <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                          <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                        </div>
+                      </li>
+                      <li className="animate-pulse">
+                        <div className="flex items-center">
+                          <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                          <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                        </div>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
               
