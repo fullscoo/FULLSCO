@@ -486,8 +486,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     let relatedScholarships = [];
     
     try {
-      // استخدام مسار API المناسب للحصول على المنحة بواسطة slug
-      scholarshipData = await apiGet(`scholarships/slug/${slug}`);
+      // إزالة البادئة /api/ لأن وحدة apiGet تضيفها تلقائيًا
+      scholarshipData = await apiGet(`/scholarships/slug/${slug}`);
       
       // محاولة الحصول على المنح ذات الصلة
       if (scholarshipData && scholarshipData.related) {
@@ -496,7 +496,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         // إذا لم يتم توفير المنح ذات الصلة من API، نحاول الحصول عليها بشكل منفصل
         console.log(`محاولة الحصول على المنح ذات الصلة للمنحة ${scholarshipData.id}`);
         try {
-          let relatedData = await apiGet(`scholarships/related/${scholarshipData.id}`);
+          let relatedData = await apiGet(`/scholarships/related/${scholarshipData.id}`);
           if (relatedData && Array.isArray(relatedData)) {
             relatedScholarships = relatedData;
           }
