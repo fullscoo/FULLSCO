@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { apiGet } from '@/lib/api'; // استيراد وحدة API الجديدة
 
 export interface SiteSettings {
   siteName: string;
@@ -163,24 +164,8 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         console.log('بدء استعلام إعدادات الموقع');
         
-        const response = await fetch('/api/site-settings', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        console.log('استجابة API لإعدادات الموقع:', {
-          status: response.status,
-          statusText: response.statusText
-        });
-        
-        if (!response.ok) {
-          throw new Error('فشل في جلب إعدادات الموقع');
-        }
-        
-        const data = await response.json();
+        // استخدام وحدة API الجديدة
+        const data = await apiGet('site-settings');
         console.log('بيانات استجابة API لإعدادات الموقع:', data);
         
         if (data.settings) {
@@ -266,12 +251,11 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
           
           // تعيين البيانات في الحالة
           setSiteSettings(formattedSettings);
+          setError(null);
         } else {
           console.error('لم يتم العثور على إعدادات في استجابة API');
           setError('لم يتم العثور على إعدادات الموقع');
         }
-        
-        setError(null);
       } catch (err) {
         console.error('خطأ في جلب إعدادات الموقع:', err);
         setError('حدث خطأ أثناء جلب إعدادات الموقع');

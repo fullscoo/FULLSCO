@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useContext, useState, useEffect } from "react";
+import { apiGet } from "@/lib/api"; // استيراد وحدة API الجديدة
 
-type MenuItemType = {
+export type MenuItemType = {
   id: number;
   title: string;
   type: string;
@@ -112,27 +113,24 @@ export function MenusProvider({ children }: { children: ReactNode }) {
       setError(null);
       
       try {
-        // جلب جميع القوائم في طلبات متوازية
-        const [headerResponse, footerResponse, footerSecondaryResponse] = await Promise.all([
-          fetch('/api/menus?location=header'),
-          fetch('/api/menus?location=footer'),
-          fetch('/api/menus?location=footer-secondary')
+        // جلب جميع القوائم في طلبات متوازية باستخدام وحدة API الجديدة
+        const [headerData, footerData, footerSecondaryData] = await Promise.all([
+          apiGet('menus', { params: { location: 'header' } }),
+          apiGet('menus', { params: { location: 'footer' } }),
+          apiGet('menus', { params: { location: 'footer-secondary' } })
         ]);
         
         // معالجة بيانات قائمة الهيدر
-        const headerData = await headerResponse.json();
         if (headerData.menuItems && Array.isArray(headerData.menuItems)) {
           setHeaderMenu(headerData.menuItems);
         }
         
         // معالجة بيانات قائمة الفوتر الرئيسية
-        const footerData = await footerResponse.json();
         if (footerData.menuItems && Array.isArray(footerData.menuItems)) {
           setFooterMainMenu(footerData.menuItems);
         }
         
         // معالجة بيانات قائمة الفوتر الثانوية
-        const footerSecondaryData = await footerSecondaryResponse.json();
         if (footerSecondaryData.menuItems && Array.isArray(footerSecondaryData.menuItems) && footerSecondaryData.menuItems.length > 0) {
           setFooterSecondaryMenu(footerSecondaryData.menuItems);
         } else {
