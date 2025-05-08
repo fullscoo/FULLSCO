@@ -14,7 +14,6 @@ import {
   Loader2 
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { Badge } from '../ui/badge';
 
 interface FilterOption {
   id: number;
@@ -199,9 +198,9 @@ export function FilterComponent({
             <h3 className="font-medium">{title}</h3>
             
             {showActiveCount && hasActiveFilters && (
-              <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+              <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full">
                 {activeFiltersCount}
-              </Badge>
+              </span>
             )}
           </div>
           
