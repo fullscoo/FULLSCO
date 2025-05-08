@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useSiteSettings } from '@/contexts/site-settings-context';
-import { Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { Mail, Phone, MapPin, Heart, Send, BookOpen, User, School, Award, ShieldCheck, HelpCircle, FileText, Home, MessageSquare, LogIn } from 'lucide-react';
 
 export default function Footer() {
   const { siteSettings } = useSiteSettings();
@@ -9,19 +9,49 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300">
+      {/* قسم النشرة الإخبارية */}
+      <div className="bg-primary/10 border-b border-primary/20 py-10">
+        <div className="container">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-right max-w-xl">
+              <h3 className="text-xl font-bold text-white mb-2">اشترك في النشرة الإخبارية</h3>
+              <p className="text-gray-300">احصل على آخر المنح الدراسية والفرص التعليمية مباشرة إلى بريدك الإلكتروني</p>
+            </div>
+            <div className="w-full md:w-auto">
+              <form className="flex">
+                <input 
+                  type="email" 
+                  placeholder="بريدك الإلكتروني" 
+                  className="flex-1 py-3 px-4 bg-white/5 border border-primary/30 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-light"
+                  required
+                />
+                <button 
+                  type="submit" 
+                  className="bg-primary text-white py-3 px-6 rounded-r-md hover:bg-primary-dark transition-colors flex items-center gap-2"
+                  aria-label="اشتراك في النشرة الإخبارية"
+                >
+                  <span>اشتراك</span>
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* القسم الرئيسي */}
-      <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="container py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* معلومات الموقع */}
           <div>
             {/* الشعار */}
-            <div className="mb-4">
+            <div className="mb-6">
               {siteSettings?.logoUrl ? (
                 <img 
                   src={siteSettings.logoUrl} 
                   alt={siteSettings.siteName || 'الموقع'}
-                  className="h-12 w-auto"
+                  className="h-14 w-auto"
                 />
               ) : (
                 <h2 className="text-2xl font-bold text-white">
@@ -31,19 +61,19 @@ export default function Footer() {
             </div>
             
             {/* وصف الموقع */}
-            <p className="mb-6 text-sm opacity-80">
+            <p className="mb-8 text-gray-400 leading-relaxed">
               {siteSettings?.siteDescription || 
                 'منصة شاملة للمنح الدراسية والفرص التعليمية حول العالم. نساعدك على العثور على المنح الدراسية المناسبة وفقًا لاهتماماتك ومؤهلاتك.'}
             </p>
             
             {/* وسائل التواصل الاجتماعي */}
-            <div className="flex space-x-4 rtl:space-x-reverse">
+            <div className="flex space-x-3 rtl:space-x-reverse">
               {siteSettings?.socialMedia?.facebook && (
                 <a 
                   href={siteSettings.socialMedia.facebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="bg-gray-800 hover:bg-blue-600 p-2 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-blue-600 rounded-full transition-colors"
                   aria-label="Facebook"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -57,7 +87,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.twitter} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="bg-gray-800 hover:bg-blue-400 p-2 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-blue-400 rounded-full transition-colors"
                   aria-label="Twitter"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -71,7 +101,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.instagram} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="bg-gray-800 hover:bg-pink-600 p-2 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-pink-600 rounded-full transition-colors"
                   aria-label="Instagram"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -85,7 +115,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.linkedin} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="bg-gray-800 hover:bg-blue-700 p-2 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-blue-700 rounded-full transition-colors"
                   aria-label="LinkedIn"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -99,7 +129,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.youtube} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="bg-gray-800 hover:bg-red-600 p-2 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-full transition-colors"
                   aria-label="YouTube"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -112,31 +142,42 @@ export default function Footer() {
           
           {/* روابط سريعة */}
           <div>
-            <h3 className="text-lg font-bold text-white mb-4">روابط سريعة</h3>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-bold text-white mb-6 pb-2 border-b border-primary/20">روابط سريعة</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href="/" className="hover:text-primary transition-colors">
-                  الرئيسية
+                <Link href="/" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <Home className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>الرئيسية</span>
                 </Link>
               </li>
               <li>
-                <Link href="/scholarships" className="hover:text-primary transition-colors">
-                  المنح الدراسية
+                <Link href="/scholarships" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <Award className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>المنح الدراسية</span>
                 </Link>
               </li>
               <li>
-                <Link href="/posts" className="hover:text-primary transition-colors">
-                  المقالات
+                <Link href="/posts" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <FileText className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>المقالات</span>
                 </Link>
               </li>
               <li>
-                <Link href="/success-stories" className="hover:text-primary transition-colors">
-                  قصص النجاح
+                <Link href="/success-stories" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <School className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>قصص النجاح</span>
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-primary transition-colors">
-                  اتصل بنا
+                <Link href="/contact" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <MessageSquare className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>اتصل بنا</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/auth/login" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <LogIn className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>تسجيل الدخول</span>
                 </Link>
               </li>
             </ul>
@@ -144,31 +185,36 @@ export default function Footer() {
           
           {/* روابط مفيدة */}
           <div>
-            <h3 className="text-lg font-bold text-white mb-4">روابط مفيدة</h3>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-bold text-white mb-6 pb-2 border-b border-primary/20">روابط مفيدة</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href="/about" className="hover:text-primary transition-colors">
-                  عن المنصة
+                <Link href="/about" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <User className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>عن المنصة</span>
                 </Link>
               </li>
               <li>
-                <Link href="/privacy-policy" className="hover:text-primary transition-colors">
-                  سياسة الخصوصية
+                <Link href="/privacy-policy" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <ShieldCheck className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>سياسة الخصوصية</span>
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-primary transition-colors">
-                  الشروط والأحكام
+                <Link href="/terms" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <FileText className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>الشروط والأحكام</span>
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="hover:text-primary transition-colors">
-                  الأسئلة الشائعة
+                <Link href="/faq" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <HelpCircle className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>الأسئلة الشائعة</span>
                 </Link>
               </li>
               <li>
-                <Link href="/sitemap" className="hover:text-primary transition-colors">
-                  خريطة الموقع
+                <Link href="/sitemap" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
+                  <BookOpen className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  <span>خريطة الموقع</span>
                 </Link>
               </li>
             </ul>
@@ -176,78 +222,76 @@ export default function Footer() {
           
           {/* معلومات الاتصال */}
           <div>
-            <h3 className="text-lg font-bold text-white mb-4">تواصل معنا</h3>
-            <ul className="space-y-3">
+            <h3 className="text-lg font-bold text-white mb-6 pb-2 border-b border-primary/20">تواصل معنا</h3>
+            <ul className="space-y-4">
               {siteSettings?.siteEmail && (
                 <li className="flex items-start">
-                  <Mail className="w-5 h-5 mt-0.5 ml-2 text-gray-400" />
-                  <a 
-                    href={`mailto:${siteSettings.siteEmail}`}
-                    className="hover:text-primary transition-colors"
-                  >
-                    {siteSettings.siteEmail}
-                  </a>
+                  <div className="p-2 bg-primary/10 rounded-lg ml-3">
+                    <Mail className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-white text-sm mb-1">البريد الإلكتروني</p>
+                    <a 
+                      href={`mailto:${siteSettings.siteEmail}`}
+                      className="text-gray-400 hover:text-primary transition-colors"
+                    >
+                      {siteSettings.siteEmail}
+                    </a>
+                  </div>
                 </li>
               )}
               
               {siteSettings?.sitePhone && (
                 <li className="flex items-start">
-                  <Phone className="w-5 h-5 mt-0.5 ml-2 text-gray-400" />
-                  <a 
-                    href={`tel:${siteSettings.sitePhone}`}
-                    className="hover:text-primary transition-colors"
-                  >
-                    {siteSettings.sitePhone}
-                  </a>
+                  <div className="p-2 bg-primary/10 rounded-lg ml-3">
+                    <Phone className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-white text-sm mb-1">رقم الهاتف</p>
+                    <a 
+                      href={`tel:${siteSettings.sitePhone}`}
+                      className="text-gray-400 hover:text-primary transition-colors"
+                    >
+                      {siteSettings.sitePhone}
+                    </a>
+                  </div>
                 </li>
               )}
               
               {siteSettings?.siteAddress && (
                 <li className="flex items-start">
-                  <MapPin className="w-5 h-5 mt-0.5 ml-2 text-gray-400" />
-                  <span>{siteSettings.siteAddress}</span>
+                  <div className="p-2 bg-primary/10 rounded-lg ml-3">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-white text-sm mb-1">العنوان</p>
+                    <span className="text-gray-400">{siteSettings.siteAddress}</span>
+                  </div>
                 </li>
               )}
             </ul>
-            
-            {/* نموذج الاشتراك في النشرة الإخبارية */}
-            <div className="mt-6">
-              <h4 className="font-medium text-white mb-2">اشترك في النشرة الإخبارية</h4>
-              <form className="flex">
-                <input 
-                  type="email" 
-                  placeholder="بريدك الإلكتروني" 
-                  className="flex-1 py-2 px-3 bg-gray-800 border border-gray-700 rounded-r-none rounded-l-lg focus:outline-none focus:ring-1 focus:ring-primary"
-                  required
-                />
-                <button 
-                  type="submit" 
-                  className="bg-primary text-white py-2 px-4 rounded-l-none rounded-r-lg hover:bg-primary/90 transition-colors"
-                >
-                  اشتراك
-                </button>
-              </form>
-            </div>
           </div>
         </div>
       </div>
       
       {/* شريط حقوق النشر */}
-      <div className="border-t border-gray-800 py-6">
+      <div className="border-t border-gray-800 py-8">
         <div className="container">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm">
-              &copy; {currentYear} {siteSettings?.siteName || 'FULLSCO'}. جميع الحقوق محفوظة.
-            </p>
+          <div className="flex flex-wrap justify-between items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-400">
+                &copy; {currentYear} {siteSettings?.siteName || 'FULLSCO'}. جميع الحقوق محفوظة.
+              </p>
+            </div>
             
-            <p className="text-sm mt-2 md:mt-0 flex items-center">
+            <p className="text-sm text-gray-400 flex items-center flex-shrink-0">
               تم التطوير بواسطة 
-              <Heart className="mx-1 w-4 h-4 text-red-500" />
+              <Heart className="mx-1 w-4 h-4 text-red-500 animate-pulse" />
               <a 
                 href="https://github.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:text-primary transition-colors"
+                className="text-white hover:text-primary transition-colors font-medium"
               >
                 FULLSCO
               </a>

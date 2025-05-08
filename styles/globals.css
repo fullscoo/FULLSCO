@@ -23,6 +23,8 @@
     /* اللون الرئيسي - أزرق */
     --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
+    --primary-light: 214 100% 60%;
+    --primary-dark: 214 100% 40%;
 
     /* اللون الثانوي - رمادي فاتح */
     --secondary: 220 14% 96%;
@@ -73,6 +75,8 @@
     /* اللون الرئيسي - أزرق في الوضع الداكن */
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-light: 214 100% 70%;
+    --primary-dark: 214 100% 50%;
 
     /* اللون الثانوي - رمادي داكن في الوضع الداكن */
     --secondary: 215 28% 17%;
@@ -128,6 +132,50 @@
 
   .font-inter {
     font-family: var(--font-inter), 'Inter', sans-serif;
+  }
+  
+  /* Header & Footer Enhancements */
+  :root {
+    --header-height: 64px;
+  }
+  
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+  }
+  
+  .header-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-slide-in-top {
+    animation: slideInTop 0.3s ease-in-out;
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideInTop {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
   }
 
   /* Utility classes for RTL */
