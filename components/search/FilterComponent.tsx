@@ -1,837 +1,576 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { 
-  Filter, 
-  Check, 
-  ChevronDown, 
-  X, 
-  ArrowUpDown, 
-  Tag, 
-  Globe, 
-  GraduationCap, 
-  Coins, 
-  Search, 
-  Loader2 
-} from 'lucide-react';
-import { cn } from '../../lib/utils';
-
-interface FilterOption {
-  id: number;
-  name: string;
-  slug?: string;
-  count?: number;
-}
+import React, { useState, useEffect } from 'react';
+import { Check, ChevronDown, X, Filter, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Category, Country, Level } from '@/shared/schema';
 
 interface FilterComponentProps {
-  categories?: FilterOption[];
-  countries?: FilterOption[];
-  levels?: FilterOption[];
-  fundingTypes?: string[];
-  defaultValues?: {
-    category?: string;
-    country?: string;
-    level?: string;
-    fundingType?: string;
-    sortBy?: string;
-  };
-  onFilterChange?: (filters: Record<string, string>) => void;
-  isLoading?: boolean;
-  variant?: 'default' | 'shadcn';
-  className?: string;
   title?: string;
+  categories?: Category[];
+  countries?: Country[];
+  levels?: Level[];
+  fundingTypes?: string[];
+  defaultValues?: Record<string, string>;
+  onFilterChange: (filters: Record<string, string>) => void;
+  isLoading?: boolean;
   showApplyButton?: boolean;
   showActiveCount?: boolean;
   includeKeywordSearch?: boolean;
+  variant?: 'default' | 'shadcn' | 'minimal';
+  className?: string;
 }
 
-/**
- * مكون تصفية المنح الدراسية المحسن
- * يتيح للمستخدمين تصفية المنح حسب الفئة، الدولة، المستوى، نوع التمويل وأكثر
- * مع دعم البحث السريع والواجهة المتقدمة
- */
 export function FilterComponent({
+  title = 'تصفية النتائج',
   categories = [],
   countries = [],
   levels = [],
-  fundingTypes = ['ممولة بالكامل', 'ممولة جزئياً', 'منح تكاليف دراسية', 'منح تدريب'],
+  fundingTypes = [],
   defaultValues = {},
   onFilterChange,
   isLoading = false,
+  showApplyButton = true,
+  showActiveCount = false,
+  includeKeywordSearch = true,
   variant = 'default',
-  className = '',
-  title = 'تصفية المنح',
-  showApplyButton = false,
-  showActiveCount = true,
-  includeKeywordSearch = false
+  className
 }: FilterComponentProps) {
-  const router = useRouter();
-  
-  // حالة تصفية المنح
-  const [filters, setFilters] = useState({
-    category: defaultValues.category || '',
-    country: defaultValues.country || '',
-    level: defaultValues.level || '',
-    fundingType: defaultValues.fundingType || '',
-    sortBy: defaultValues.sortBy || 'newest',
-    keyword: ''
+  const [filters, setFilters] = useState<Record<string, string>>({
+    category: '',
+    country: '',
+    level: '',
+    fundingType: '',
+    dateRange: '',
+    sortBy: 'relevance',
+    ...defaultValues
   });
   
-  // حالة عرض/إخفاء الفلاتر على الأجهزة المحمولة
-  const [showFilters, setShowFilters] = useState(false);
-  
-  // حالة عملية التطبيق
-  const [isApplying, setIsApplying] = useState(false);
-  
-  // تأثير لتحديث حالة الفلاتر عند تغيير استعلام URL
+  const [keyword, setKeyword] = useState('');
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({
+    categories: true,
+    countries: true,
+    levels: true,
+    fundingTypes: true,
+    dateRange: true,
+    sortBy: true,
+  });
+
+  // حساب عدد الفلاتر النشطة
   useEffect(() => {
-    setFilters({
-      category: (router.query.category as string) || defaultValues.category || '',
-      country: (router.query.country as string) || defaultValues.country || '',
-      level: (router.query.level as string) || defaultValues.level || '',
-      fundingType: (router.query.fundingType as string) || defaultValues.fundingType || '',
-      sortBy: (router.query.sortBy as string) || defaultValues.sortBy || 'newest',
-      keyword: (router.query.keyword as string) || ''
-    });
-  }, [router.query, defaultValues]);
-  
-  // معالجة تغيير الفلاتر
-  const handleFilterChange = (filterName: string, value: string) => {
-    const newFilters = { ...filters, [filterName]: value };
+    const count = Object.values(filters).filter(value => value && value !== 'relevance').length;
+    setActiveFiltersCount(count);
+  }, [filters]);
+
+  // تطبيق الفلاتر عند تغييرها
+  const handleFilterChange = (key: string, value: string) => {
+    const newFilters = { ...filters, [key]: value };
+    
     setFilters(newFilters);
     
     if (!showApplyButton) {
-      applyFilters(newFilters);
+      onFilterChange(newFilters);
     }
   };
-  
-  // معالجة تغيير كلمات البحث
-  const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({ ...filters, keyword: e.target.value });
-  };
-  
-  // تطبيق الفلاتر
-  const applyFilters = (filtersToApply = filters) => {
-    setIsApplying(true);
+
+  // تطبيق الفلاتر عند النقر على زر التطبيق
+  const applyFilters = () => {
+    const filtersWithKeyword = includeKeywordSearch && keyword 
+      ? { ...filters, keyword } 
+      : filters;
     
-    try {
-      if (onFilterChange) {
-        onFilterChange(filtersToApply);
-      } else {
-        // تحديث استعلام URL
-        const updatedQuery = { ...router.query, page: '1' } as Record<string, string>;
-        
-        // إضافة الفلاتر إلى الاستعلام
-        Object.entries(filtersToApply).forEach(([key, value]: [string, string]) => {
-          if (value) {
-            (updatedQuery as any)[key] = value;
-          } else {
-            delete (updatedQuery as any)[key];
-          }
-        });
-        
-        router.push({
-          pathname: router.pathname,
-          query: updatedQuery
-        }, undefined, { scroll: false });
-      }
-    } finally {
-      setIsApplying(false);
-    }
+    onFilterChange(filtersWithKeyword);
   };
-  
-  // مسح جميع الفلاتر
-  const clearAllFilters = () => {
-    const newFilters = {
+
+  // إعادة تعيين الفلاتر
+  const resetFilters = () => {
+    const defaultFilters = {
       category: '',
       country: '',
       level: '',
       fundingType: '',
-      sortBy: 'newest',
-      keyword: ''
+      dateRange: '',
+      sortBy: 'relevance'
     };
     
-    setFilters(newFilters);
+    setFilters(defaultFilters);
+    setKeyword('');
     
-    if (!showApplyButton) {
-      if (onFilterChange) {
-        onFilterChange(newFilters);
-      } else {
-        // استخراج استعلام البحث فقط من الاستعلام الحالي
-        const { search, page = '1', ...rest } = router.query;
-        
-        router.push({
-          pathname: router.pathname,
-          query: search ? { search, page: '1' } : { page: '1' }
-        }, undefined, { scroll: false });
-      }
-    }
+    onFilterChange(defaultFilters);
   };
-  
-  // التحقق مما إذا كانت أي فلاتر نشطة
-  const hasActiveFilters = filters.category || filters.country || filters.level || filters.fundingType || filters.sortBy !== 'newest' || filters.keyword;
-  
-  // عدد الفلاتر النشطة
-  const activeFiltersCount = [
-    filters.category, 
-    filters.country, 
-    filters.level, 
-    filters.fundingType,
-    filters.keyword
-  ].filter(Boolean).length;
-  
-  // قائمة خيارات الترتيب
-  const sortOptions = [
-    { value: 'newest', label: 'الأحدث' },
-    { value: 'deadline', label: 'آخر موعد للتقديم' },
-    { value: 'popularity', label: 'الأكثر شهرة' },
-    { value: 'relevance', label: 'الأكثر صلة' }
-  ];
-  
-  // تعيين تصميم shadcn
-  if (variant === 'shadcn') {
+
+  // التبديل بين فتح وإغلاق قسم معين
+  const toggleSection = (section: string) => {
+    setIsOpen(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  // تصيير قسم الفلتر مع عنوان قابل للطي
+  const renderFilterSection = (
+    title: string, 
+    section: string, 
+    children: React.ReactNode
+  ) => {
+    if (variant === 'minimal') {
+      return (
+        <div className="mb-4">
+          <div className="mb-2 font-medium text-gray-700 dark:text-gray-300">{title}</div>
+          {children}
+        </div>
+      );
+    }
+    
     return (
-      <div className={cn("rounded-lg border border-input bg-background shadow-sm overflow-hidden", className)}>
-        {/* رأس الفلاتر */}
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <div className="flex items-center gap-2">
-            <Filter size={18} className="text-muted-foreground" />
-            <h3 className="font-medium">{title}</h3>
-            
-            {showActiveCount && hasActiveFilters && (
-              <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full">
-                {activeFiltersCount}
-              </span>
+      <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection(section)}
+          className="flex items-center justify-between w-full p-3 text-right bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+        >
+          <span className="font-medium text-gray-700 dark:text-gray-300">{title}</span>
+          <ChevronDown 
+            className={cn(
+              "h-4 w-4 transition-transform", 
+              isOpen[section] ? "transform rotate-180" : ""
             )}
+          />
+        </button>
+        
+        {isOpen[section] && (
+          <div className="p-3 bg-white dark:bg-gray-800">
+            {children}
           </div>
-          
-          <div className="flex items-center gap-3">
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
-                disabled={isLoading || isApplying}
-              >
-                <X size={14} />
-                مسح الكل
-              </button>
+        )}
+      </div>
+    );
+  };
+
+  // تصيير خيارات الفلتر (مثل التصنيفات، الدول، إلخ)
+  const renderFilterOptions = (
+    options: { id: number; name: string; slug: string }[],
+    type: string,
+    selectedValue: string
+  ) => {
+    return (
+      <div className="space-y-2 max-h-48 overflow-y-auto">
+        {options.map((option) => (
+          <label
+            key={`${type}-${option.id}`}
+            className={cn(
+              "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer",
+              filters[type] === option.slug
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-gray-100 dark:hover:bg-gray-750"
             )}
-            
-            <button
-              type="button"
-              className="md:hidden text-muted-foreground hover:text-foreground"
-              onClick={() => setShowFilters(!showFilters)}
-              aria-expanded={showFilters}
-              aria-label={showFilters ? 'إخفاء الفلاتر' : 'عرض الفلاتر'}
-            >
-              <ChevronDown
-                size={18}
-                className={`transition-transform ${showFilters ? 'rotate-180' : ''}`}
-              />
-            </button>
+          >
+            <input
+              type="radio"
+              name={type}
+              value={option.slug}
+              checked={filters[type] === option.slug}
+              onChange={() => handleFilterChange(type, option.slug)}
+              className="sr-only"
+            />
+            <span className={cn(
+              "h-4 w-4 rounded-full border flex items-center justify-center",
+              filters[type] === option.slug 
+                ? "border-primary" 
+                : "border-gray-300 dark:border-gray-600"
+            )}>
+              {filters[type] === option.slug && (
+                <span className="h-2 w-2 rounded-full bg-primary" />
+              )}
+            </span>
+            <span className="block truncate">{option.name}</span>
+          </label>
+        ))}
+        
+        {options.length > 0 && (
+          <label
+            className={cn(
+              "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer",
+              !selectedValue
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-gray-100 dark:hover:bg-gray-750"
+            )}
+          >
+            <input
+              type="radio"
+              name={type}
+              value=""
+              checked={!selectedValue}
+              onChange={() => handleFilterChange(type, '')}
+              className="sr-only"
+            />
+            <span className={cn(
+              "h-4 w-4 rounded-full border flex items-center justify-center",
+              !selectedValue
+                ? "border-primary" 
+                : "border-gray-300 dark:border-gray-600"
+            )}>
+              {!selectedValue && (
+                <span className="h-2 w-2 rounded-full bg-primary" />
+              )}
+            </span>
+            <span className="block truncate">الكل</span>
+          </label>
+        )}
+        
+        {options.length === 0 && (
+          <div className="text-sm text-gray-500 dark:text-gray-400 py-1">
+            لا توجد خيارات متاحة
           </div>
+        )}
+      </div>
+    );
+  };
+
+  // تصيير الفلاتر النشطة
+  const renderActiveFilters = () => {
+    if (activeFiltersCount === 0) return null;
+    
+    const getFilterLabel = (key: string, value: string) => {
+      switch (key) {
+        case 'category':
+          return categories.find(c => c.slug === value)?.name || value;
+        case 'country':
+          return countries.find(c => c.slug === value)?.name || value;
+        case 'level':
+          return levels.find(l => l.slug === value)?.name || value;
+        case 'fundingType':
+          return fundingTypes.find(f => f === value) || value;
+        case 'sortBy':
+          return value === 'relevance' ? 'الأكثر صلة' : 
+                 value === 'date' ? 'الأحدث' : 
+                 value === 'deadline' ? 'الموعد النهائي' : value;
+        default:
+          return value;
+      }
+    };
+    
+    return (
+      <div className="mt-4 mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            الفلاتر النشطة ({activeFiltersCount})
+          </span>
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="text-xs text-red-600 dark:text-red-400 hover:underline"
+          >
+            إعادة تعيين الكل
+          </button>
         </div>
         
-        {/* محتوى الفلاتر */}
-        <div className={`md:block ${showFilters ? 'block' : 'hidden'}`}>
-          <div className="divide-y">
-            {/* البحث بالكلمات المفتاحية */}
-            {includeKeywordSearch && (
-              <div className="p-4">
-                <div className="relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="ابحث عن كلمات مفتاحية..."
-                    className="w-full h-9 pl-3 pr-9 bg-background border border-input rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    value={filters.keyword}
-                    onChange={handleKeywordChange}
-                    disabled={isLoading || isApplying}
-                  />
-                  {filters.keyword && (
-                    <button
-                      type="button"
-                      onClick={() => handleFilterChange('keyword', '')}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      aria-label="مسح البحث"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(filters).map(([key, value]) => {
+            if (!value || (key === 'sortBy' && value === 'relevance')) return null;
             
-            {/* التصنيفات */}
-            {categories.length > 0 && (
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Tag className="h-4 w-4 text-primary" />
-                  <h4 className="font-medium text-sm">التصنيف</h4>
-                </div>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                      filters.category === '' 
-                        ? "bg-accent text-accent-foreground font-medium" 
-                        : "text-foreground hover:bg-muted"
-                    )}
-                    onClick={() => handleFilterChange('category', '')}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.category === '' && <Check size={14} />}
-                    <span className={filters.category === '' ? 'mr-2' : ''}>جميع التصنيفات</span>
-                  </button>
-                  
-                  {categories.map(category => (
-                    <button
-                      key={category.id}
-                      type="button"
-                      className={cn(
-                        "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                        filters.category === category.slug 
-                          ? "bg-accent text-accent-foreground font-medium" 
-                          : "text-foreground hover:bg-muted"
-                      )}
-                      onClick={() => handleFilterChange('category', category.slug || '')}
-                      disabled={isLoading || isApplying}
-                    >
-                      {filters.category === category.slug && <Check size={14} />}
-                      <span className={filters.category === category.slug ? 'mr-2' : ''}>
-                        {category.name}
-                        {category.count !== undefined && (
-                          <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full mr-1 font-normal">
-                            {category.count}
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* الدول */}
-            {countries.length > 0 && (
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <h4 className="font-medium text-sm">الدولة</h4>
-                </div>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                      filters.country === '' 
-                        ? "bg-accent text-accent-foreground font-medium" 
-                        : "text-foreground hover:bg-muted"
-                    )}
-                    onClick={() => handleFilterChange('country', '')}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.country === '' && <Check size={14} />}
-                    <span className={filters.country === '' ? 'mr-2' : ''}>جميع الدول</span>
-                  </button>
-                  
-                  {countries.map(country => (
-                    <button
-                      key={country.id}
-                      type="button"
-                      className={cn(
-                        "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                        filters.country === country.slug 
-                          ? "bg-accent text-accent-foreground font-medium" 
-                          : "text-foreground hover:bg-muted"
-                      )}
-                      onClick={() => handleFilterChange('country', country.slug || '')}
-                      disabled={isLoading || isApplying}
-                    >
-                      {filters.country === country.slug && <Check size={14} />}
-                      <span className={filters.country === country.slug ? 'mr-2' : ''}>
-                        {country.name}
-                        {country.count !== undefined && (
-                          <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full mr-1 font-normal">
-                            {country.count}
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* المستويات */}
-            {levels.length > 0 && (
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <GraduationCap className="h-4 w-4 text-primary" />
-                  <h4 className="font-medium text-sm">المستوى</h4>
-                </div>
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                      filters.level === '' 
-                        ? "bg-accent text-accent-foreground font-medium" 
-                        : "text-foreground hover:bg-muted"
-                    )}
-                    onClick={() => handleFilterChange('level', '')}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.level === '' && <Check size={14} />}
-                    <span className={filters.level === '' ? 'mr-2' : ''}>جميع المستويات</span>
-                  </button>
-                  
-                  {levels.map(level => (
-                    <button
-                      key={level.id}
-                      type="button"
-                      className={cn(
-                        "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                        filters.level === level.slug 
-                          ? "bg-accent text-accent-foreground font-medium" 
-                          : "text-foreground hover:bg-muted"
-                      )}
-                      onClick={() => handleFilterChange('level', level.slug || '')}
-                      disabled={isLoading || isApplying}
-                    >
-                      {filters.level === level.slug && <Check size={14} />}
-                      <span className={filters.level === level.slug ? 'mr-2' : ''}>
-                        {level.name}
-                        {level.count !== undefined && (
-                          <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full mr-1 font-normal">
-                            {level.count}
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* نوع التمويل */}
-            {fundingTypes.length > 0 && (
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <h4 className="font-medium text-sm">نوع التمويل</h4>
-                </div>
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                      filters.fundingType === '' 
-                        ? "bg-accent text-accent-foreground font-medium" 
-                        : "text-foreground hover:bg-muted"
-                    )}
-                    onClick={() => handleFilterChange('fundingType', '')}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.fundingType === '' && <Check size={14} />}
-                    <span className={filters.fundingType === '' ? 'mr-2' : ''}>جميع أنواع التمويل</span>
-                  </button>
-                  
-                  {fundingTypes.map(type => (
-                    <button
-                      key={type}
-                      type="button"
-                      className={cn(
-                        "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                        filters.fundingType === type 
-                          ? "bg-accent text-accent-foreground font-medium" 
-                          : "text-foreground hover:bg-muted"
-                      )}
-                      onClick={() => handleFilterChange('fundingType', type)}
-                      disabled={isLoading || isApplying}
-                    >
-                      {filters.fundingType === type && <Check size={14} />}
-                      <span className={filters.fundingType === type ? 'mr-2' : ''}>{type}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* ترتيب حسب */}
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <ArrowUpDown className="h-4 w-4 text-primary" />
-                <h4 className="font-medium text-sm">ترتيب حسب</h4>
-              </div>
-              <div className="space-y-2">
-                {sortOptions.map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md text-right",
-                      filters.sortBy === option.value 
-                        ? "bg-accent text-accent-foreground font-medium" 
-                        : "text-foreground hover:bg-muted"
-                    )}
-                    onClick={() => handleFilterChange('sortBy', option.value)}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.sortBy === option.value && <Check size={14} />}
-                    <span className={filters.sortBy === option.value ? 'mr-2' : ''}>{option.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* زر تطبيق الفلاتر */}
-            {showApplyButton && (
-              <div className="p-4">
+            return (
+              <span
+                key={`active-${key}-${value}`}
+                className="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-750 rounded-md text-sm"
+              >
+                {getFilterLabel(key, value)}
                 <button
                   type="button"
-                  onClick={() => applyFilters()}
-                  disabled={isLoading || isApplying}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md py-2 px-4 transition-colors flex items-center justify-center"
+                  onClick={() => handleFilterChange(key, '')}
+                  className="ml-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  {isApplying && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                  تطبيق الفلاتر
+                  <X size={14} />
                 </button>
-              </div>
-            )}
-          </div>
+              </span>
+            );
+          })}
         </div>
       </div>
     );
+  };
+
+  // تصيير المكون في النمط المبسط
+  if (variant === 'minimal') {
+    return (
+      <div className={cn("bg-white dark:bg-gray-800 border-0", className)}>
+        {title && <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{title}</h3>}
+        
+        {includeKeywordSearch && (
+          <div className="mb-4">
+            <div className="mb-2 font-medium text-gray-700 dark:text-gray-300">بحث</div>
+            <div className="relative">
+              <input
+                type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="بحث..."
+                className="w-full p-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
+          </div>
+        )}
+        
+        {categories.length > 0 && (
+          <div className="mb-4">
+            <div className="mb-2 font-medium text-gray-700 dark:text-gray-300">التصنيف</div>
+            <select
+              value={filters.category}
+              onChange={(e) => handleFilterChange('category', e.target.value)}
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              <option value="">جميع التصنيفات</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.slug}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
+        {countries.length > 0 && (
+          <div className="mb-4">
+            <div className="mb-2 font-medium text-gray-700 dark:text-gray-300">الدولة</div>
+            <select
+              value={filters.country}
+              onChange={(e) => handleFilterChange('country', e.target.value)}
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              <option value="">جميع الدول</option>
+              {countries.map((country) => (
+                <option key={country.id} value={country.slug}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
+        {levels.length > 0 && (
+          <div className="mb-4">
+            <div className="mb-2 font-medium text-gray-700 dark:text-gray-300">المستوى الدراسي</div>
+            <select
+              value={filters.level}
+              onChange={(e) => handleFilterChange('level', e.target.value)}
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              <option value="">جميع المستويات</option>
+              {levels.map((level) => (
+                <option key={level.id} value={level.slug}>
+                  {level.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
+        {showApplyButton && (
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="w-full py-2 bg-primary text-white rounded-md hover:bg-primary-focus transition-colors"
+          >
+            تطبيق الفلاتر
+          </button>
+        )}
+      </div>
+    );
   }
-  
-  // التصميم الافتراضي
+
+  // تصيير المكون في النمط الافتراضي أو نمط shadcn
   return (
-    <div className={cn("bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden", className)}>
-      {/* رأس الفلاتر */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2">
-          <Filter size={18} />
-          <h3 className="font-medium">{title}</h3>
-          
-          {showActiveCount && hasActiveFilters && (
-            <span className="bg-primary text-white text-xs px-1.5 py-0.5 rounded-full">
+    <div className={cn(
+      variant === 'shadcn'
+        ? "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+        : "bg-white dark:bg-gray-800",
+      className
+    )}>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+          {title}
+          {showActiveCount && activeFiltersCount > 0 && (
+            <span className="ml-2 text-xs font-normal bg-primary/20 text-primary rounded-full px-1.5 py-0.5">
               {activeFiltersCount}
             </span>
           )}
-        </div>
+        </h3>
         
-        <div className="flex items-center gap-3">
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary flex items-center gap-1"
-              disabled={isLoading || isApplying}
-            >
-              <X size={14} />
-              مسح الكل
-            </button>
-          )}
-          
+        {activeFiltersCount > 0 && (
           <button
             type="button"
-            className="md:hidden"
-            onClick={() => setShowFilters(!showFilters)}
-            aria-expanded={showFilters}
-            aria-label={showFilters ? 'إخفاء الفلاتر' : 'عرض الفلاتر'}
+            onClick={resetFilters}
+            className="text-sm text-red-600 dark:text-red-400 hover:underline"
           >
-            <ChevronDown
-              size={18}
-              className={`transition-transform ${showFilters ? 'rotate-180' : ''}`}
-            />
+            إعادة تعيين
           </button>
-        </div>
+        )}
       </div>
       
-      {/* محتوى الفلاتر */}
-      <div className={`md:block ${showFilters ? 'block' : 'hidden'}`}>
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {/* البحث بالكلمات المفتاحية */}
-          {includeKeywordSearch && (
-            <div className="p-4">
-              <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="ابحث عن كلمات مفتاحية..."
-                  className="w-full h-10 pl-3 pr-9 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md text-gray-800 dark:text-gray-200 placeholder:text-gray-500 focus:ring-2 focus:ring-primary focus:border-primary"
-                  value={filters.keyword}
-                  onChange={handleKeywordChange}
-                  disabled={isLoading || isApplying}
-                />
-                {filters.keyword && (
-                  <button
-                    type="button"
-                    onClick={() => handleFilterChange('keyword', '')}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                    aria-label="مسح البحث"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* التصنيفات */}
-          {categories.length > 0 && (
-            <div className="p-4">
-              <h4 className="font-medium mb-2 flex items-center gap-1">
-                <Tag size={16} className="ml-1 text-primary" />
-                التصنيف
-              </h4>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                <button
-                  type="button"
-                  className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                    filters.category === '' ? 'text-primary font-medium' : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                  onClick={() => handleFilterChange('category', '')}
-                  disabled={isLoading || isApplying}
-                >
-                  {filters.category === '' && <Check size={16} />}
-                  <span className={filters.category === '' ? 'mr-2' : ''}>جميع التصنيفات</span>
-                </button>
-                
-                {categories.map(category => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                      filters.category === category.slug 
-                        ? 'text-primary font-medium' 
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                    onClick={() => handleFilterChange('category', category.slug || '')}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.category === category.slug && <Check size={16} />}
-                    <span className={filters.category === category.slug ? 'mr-2' : ''}>
-                      {category.name}
-                      {category.count !== undefined && (
-                        <span className="text-gray-500 dark:text-gray-400 text-xs mr-1 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
-                          {category.count}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* الدول */}
-          {countries.length > 0 && (
-            <div className="p-4">
-              <h4 className="font-medium mb-2 flex items-center gap-1">
-                <Globe size={16} className="ml-1 text-primary" />
-                الدولة
-              </h4>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                <button
-                  type="button"
-                  className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                    filters.country === '' ? 'text-primary font-medium' : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                  onClick={() => handleFilterChange('country', '')}
-                  disabled={isLoading || isApplying}
-                >
-                  {filters.country === '' && <Check size={16} />}
-                  <span className={filters.country === '' ? 'mr-2' : ''}>جميع الدول</span>
-                </button>
-                
-                {countries.map(country => (
-                  <button
-                    key={country.id}
-                    type="button"
-                    className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                      filters.country === country.slug 
-                        ? 'text-primary font-medium' 
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                    onClick={() => handleFilterChange('country', country.slug || '')}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.country === country.slug && <Check size={16} />}
-                    <span className={filters.country === country.slug ? 'mr-2' : ''}>
-                      {country.name}
-                      {country.count !== undefined && (
-                        <span className="text-gray-500 dark:text-gray-400 text-xs mr-1 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
-                          {country.count}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* المستويات */}
-          {levels.length > 0 && (
-            <div className="p-4">
-              <h4 className="font-medium mb-2 flex items-center gap-1">
-                <GraduationCap size={16} className="ml-1 text-primary" />
-                المستوى
-              </h4>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                    filters.level === '' ? 'text-primary font-medium' : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                  onClick={() => handleFilterChange('level', '')}
-                  disabled={isLoading || isApplying}
-                >
-                  {filters.level === '' && <Check size={16} />}
-                  <span className={filters.level === '' ? 'mr-2' : ''}>جميع المستويات</span>
-                </button>
-                
-                {levels.map(level => (
-                  <button
-                    key={level.id}
-                    type="button"
-                    className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                      filters.level === level.slug 
-                        ? 'text-primary font-medium' 
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                    onClick={() => handleFilterChange('level', level.slug || '')}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.level === level.slug && <Check size={16} />}
-                    <span className={filters.level === level.slug ? 'mr-2' : ''}>
-                      {level.name}
-                      {level.count !== undefined && (
-                        <span className="text-gray-500 dark:text-gray-400 text-xs mr-1 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
-                          {level.count}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* نوع التمويل */}
-          {fundingTypes.length > 0 && (
-            <div className="p-4">
-              <h4 className="font-medium mb-2 flex items-center gap-1">
-                <Coins size={16} className="ml-1 text-primary" />
-                نوع التمويل
-              </h4>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                    filters.fundingType === '' ? 'text-primary font-medium' : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                  onClick={() => handleFilterChange('fundingType', '')}
-                  disabled={isLoading || isApplying}
-                >
-                  {filters.fundingType === '' && <Check size={16} />}
-                  <span className={filters.fundingType === '' ? 'mr-2' : ''}>جميع أنواع التمويل</span>
-                </button>
-                
-                {fundingTypes.map(type => (
-                  <button
-                    key={type}
-                    type="button"
-                    className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                      filters.fundingType === type 
-                        ? 'text-primary font-medium' 
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                    onClick={() => handleFilterChange('fundingType', type)}
-                    disabled={isLoading || isApplying}
-                  >
-                    {filters.fundingType === type && <Check size={16} />}
-                    <span className={filters.fundingType === type ? 'mr-2' : ''}>{type}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* ترتيب حسب */}
-          <div className="p-4">
-            <h4 className="font-medium mb-2 flex items-center gap-1">
-              <ArrowUpDown size={16} className="ml-1 text-primary" />
-              ترتيب حسب
-            </h4>
-            <div className="space-y-2">
-              {sortOptions.map(option => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`flex items-center gap-2 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-750 px-2 py-1 rounded ${
-                    filters.sortBy === option.value 
-                      ? 'text-primary font-medium' 
-                      : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                  onClick={() => handleFilterChange('sortBy', option.value)}
-                  disabled={isLoading || isApplying}
-                >
-                  {filters.sortBy === option.value && <Check size={16} />}
-                  <span className={filters.sortBy === option.value ? 'mr-2' : ''}>{option.label}</span>
-                </button>
-              ))}
-            </div>
+      {/* الفلاتر النشطة */}
+      {showActiveCount && renderActiveFilters()}
+      
+      {/* حقل البحث بالكلمات المفتاحية */}
+      {includeKeywordSearch && (
+        <div className="mb-4">
+          <div className="relative">
+            <input
+              type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="بحث..."
+              className="w-full p-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+            <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
-          
-          {/* زر تطبيق الفلاتر */}
-          {showApplyButton && (
-            <div className="p-4">
-              <button
-                type="button"
-                onClick={() => applyFilters()}
-                disabled={isLoading || isApplying}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-medium rounded-md py-2 px-4 transition-colors flex items-center justify-center"
-              >
-                {isApplying && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                تطبيق الفلاتر
-              </button>
-            </div>
-          )}
         </div>
-      </div>
+      )}
+      
+      {/* أقسام الفلاتر */}
+      {categories.length > 0 && (
+        renderFilterSection('التصنيف', 'categories', renderFilterOptions(categories, 'category', filters.category))
+      )}
+      
+      {countries.length > 0 && (
+        renderFilterSection('الدولة', 'countries', renderFilterOptions(countries, 'country', filters.country))
+      )}
+      
+      {levels.length > 0 && (
+        renderFilterSection('المستوى الدراسي', 'levels', renderFilterOptions(levels, 'level', filters.level))
+      )}
+      
+      {fundingTypes.length > 0 && (
+        renderFilterSection('نوع التمويل', 'fundingTypes', (
+          <div className="space-y-2">
+            {fundingTypes.map((type) => (
+              <label
+                key={`funding-${type}`}
+                className={cn(
+                  "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer",
+                  filters.fundingType === type
+                    ? "bg-primary/10 text-primary"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-750"
+                )}
+              >
+                <input
+                  type="radio"
+                  name="fundingType"
+                  value={type}
+                  checked={filters.fundingType === type}
+                  onChange={() => handleFilterChange('fundingType', type)}
+                  className="sr-only"
+                />
+                <span className={cn(
+                  "h-4 w-4 rounded-full border flex items-center justify-center",
+                  filters.fundingType === type 
+                    ? "border-primary" 
+                    : "border-gray-300 dark:border-gray-600"
+                )}>
+                  {filters.fundingType === type && (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </span>
+                <span>{type}</span>
+              </label>
+            ))}
+            
+            <label
+              className={cn(
+                "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer",
+                !filters.fundingType
+                  ? "bg-primary/10 text-primary"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-750"
+              )}
+            >
+              <input
+                type="radio"
+                name="fundingType"
+                value=""
+                checked={!filters.fundingType}
+                onChange={() => handleFilterChange('fundingType', '')}
+                className="sr-only"
+              />
+              <span className={cn(
+                "h-4 w-4 rounded-full border flex items-center justify-center",
+                !filters.fundingType
+                  ? "border-primary" 
+                  : "border-gray-300 dark:border-gray-600"
+              )}>
+                {!filters.fundingType && (
+                  <span className="h-2 w-2 rounded-full bg-primary" />
+                )}
+              </span>
+              <span>الكل</span>
+            </label>
+          </div>
+        ))
+      )}
+      
+      {/* الترتيب حسب */}
+      {renderFilterSection('الترتيب حسب', 'sortBy', (
+        <div className="space-y-2">
+          {[
+            { value: 'relevance', label: 'الأكثر صلة' },
+            { value: 'date', label: 'الأحدث' },
+            { value: 'deadline', label: 'الموعد النهائي' }
+          ].map((option) => (
+            <label
+              key={`sort-${option.value}`}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer",
+                filters.sortBy === option.value
+                  ? "bg-primary/10 text-primary"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-750"
+              )}
+            >
+              <input
+                type="radio"
+                name="sortBy"
+                value={option.value}
+                checked={filters.sortBy === option.value}
+                onChange={() => handleFilterChange('sortBy', option.value)}
+                className="sr-only"
+              />
+              <span className={cn(
+                "h-4 w-4 rounded-full border flex items-center justify-center",
+                filters.sortBy === option.value 
+                  ? "border-primary" 
+                  : "border-gray-300 dark:border-gray-600"
+              )}>
+                {filters.sortBy === option.value && (
+                  <span className="h-2 w-2 rounded-full bg-primary" />
+                )}
+              </span>
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      ))}
+      
+      {/* زر تطبيق الفلاتر */}
+      {showApplyButton && (
+        <button
+          type="button"
+          onClick={applyFilters}
+          disabled={isLoading}
+          className={cn(
+            "w-full mt-4 flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-md hover:bg-primary-focus transition-colors",
+            isLoading && "opacity-75 cursor-not-allowed"
+          )}
+        >
+          {isLoading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              <span>جاري التطبيق...</span>
+            </>
+          ) : (
+            <>
+              <Filter size={16} />
+              <span>تطبيق الفلاتر</span>
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }
-
-/**
- * مكون تصفية مصغر للاستخدام في صفحات المنح والمحتوى
- */
-export function MiniFilterComponent({
-  categories = [],
-  countries = [],
-  levels = [],
-  onFilterChange,
-  variant = 'default',
-  className = '',
-}: Pick<FilterComponentProps, 'categories' | 'countries' | 'levels' | 'onFilterChange' | 'variant' | 'className'>) {
-  return (
-    <FilterComponent
-      categories={categories}
-      countries={countries}
-      levels={levels}
-      onFilterChange={onFilterChange}
-      variant={variant}
-      className={className}
-      title="التصفية السريعة"
-      showApplyButton={true}
-      showActiveCount={false}
-      includeKeywordSearch={true}
-    />
-  );
-}
-
-export default FilterComponent;
