@@ -19,9 +19,11 @@ export default function Footer() {
   const { siteSettings, isLoading: isSettingsLoading } = useSiteSettings();
   const { footerMainMenu, footerSecondaryMenu, isLoading: isMenuLoading } = useMenus();
   
-  // للتشخيص
+  // للتشخيص المفصل
   console.log('إعدادات الموقع في الفوتر:', siteSettings);
+  console.log('حالة التحميل لإعدادات الموقع:', isSettingsLoading);
   console.log('قائمة الفوتر الثانوية:', footerSecondaryMenu);
+  console.log('حالة التحميل للقائمة:', isMenuLoading);
   
   // الحصول على السنة الحالية
   const currentYear = new Date().getFullYear();

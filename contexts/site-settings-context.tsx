@@ -104,27 +104,90 @@ const defaultSiteSettings: SiteSettings = {
 
 // مزود سياق إعدادات الموقع
 export function SiteSettingsProvider({ children }: { children: ReactNode }) {
-  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // القيم المبدئية هي null (لا نستخدم قيم افتراضية)
+  const [cachedSettings, setCachedSettings] = useState<SiteSettings | null>(null);
+  
+  // محاولة تحميل البيانات المخزنة مبدئيًا
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && localStorage) {
+        const cachedDataString = localStorage.getItem('site_settings_cache');
+        if (cachedDataString) {
+          const parsed = JSON.parse(cachedDataString);
+          console.log('تم العثور على بيانات مخزنة للإعدادات');
+          setCachedSettings(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('خطأ عند محاولة قراءة التخزين المحلي:', e);
+    }
+  }, []);
+  
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(cachedSettings);
+  const [isLoading, setIsLoading] = useState(!cachedSettings);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // التحقق من وجود بيانات في التخزين المحلي أولاً
+    const loadFromCache = () => {
+      try {
+        const cachedDataString = localStorage.getItem('site_settings_cache');
+        const cachedTimestamp = localStorage.getItem('site_settings_timestamp');
+        
+        if (cachedDataString && cachedTimestamp) {
+          const now = Date.now();
+          const timestamp = parseInt(cachedTimestamp, 10);
+          
+          // التحقق من صلاحية البيانات المخزنة (24 ساعة)
+          if (now - timestamp < 24 * 60 * 60 * 1000) {
+            const cachedData = JSON.parse(cachedDataString);
+            console.log('تم استخدام البيانات المخزنة مؤقتاً لإعدادات الموقع');
+            setSiteSettings(cachedData);
+            return true;
+          }
+        }
+      } catch (error) {
+        console.warn('خطأ في قراءة البيانات المخزنة:', error);
+      }
+      return false;
+    };
+
     async function fetchSiteSettings() {
       try {
+        // محاولة استخدام البيانات المخزنة أولاً
+        if (loadFromCache()) {
+          setIsLoading(false);
+          return;
+        }
+        
         setIsLoading(true);
-        const response = await fetch('/api/site-settings');
+        console.log('بدء استعلام إعدادات الموقع');
+        
+        const response = await fetch('/api/site-settings', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        console.log('استجابة API لإعدادات الموقع:', {
+          status: response.status,
+          statusText: response.statusText
+        });
         
         if (!response.ok) {
           throw new Error('فشل في جلب إعدادات الموقع');
         }
         
         const data = await response.json();
+        console.log('بيانات استجابة API لإعدادات الموقع:', data);
         
         if (data.settings) {
           console.log('تم استلام إعدادات الموقع:', data.settings);
           
-          // تعيين بيانات الإعدادات مباشرة بدون تنسيق لاستخدام البيانات الحقيقية فقط
-          setSiteSettings({
+          // إعداد كائن الإعدادات
+          const formattedSettings: SiteSettings = {
             // البيانات الأساسية
             siteName: data.settings.siteName,
             siteDescription: data.settings.siteDescription,
@@ -190,7 +253,19 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
             linkedin: data.settings.linkedin,
             youtube: data.settings.youtube,
             whatsapp: data.settings.whatsapp
-          });
+          };
+          
+          // تخزين البيانات في التخزين المحلي
+          try {
+            localStorage.setItem('site_settings_cache', JSON.stringify(formattedSettings));
+            localStorage.setItem('site_settings_timestamp', Date.now().toString());
+            console.log('تم تخزين إعدادات الموقع في التخزين المؤقت');
+          } catch (error) {
+            console.warn('فشل تخزين إعدادات الموقع في التخزين المحلي:', error);
+          }
+          
+          // تعيين البيانات في الحالة
+          setSiteSettings(formattedSettings);
         } else {
           console.error('لم يتم العثور على إعدادات في استجابة API');
           setError('لم يتم العثور على إعدادات الموقع');
@@ -200,6 +275,19 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         console.error('خطأ في جلب إعدادات الموقع:', err);
         setError('حدث خطأ أثناء جلب إعدادات الموقع');
+        
+        // في حالة الخطأ، نحاول استخدام البيانات المخزنة بغض النظر عن وقت انتهاء الصلاحية
+        try {
+          const cachedDataString = localStorage.getItem('site_settings_cache');
+          if (cachedDataString) {
+            const cachedData = JSON.parse(cachedDataString);
+            console.log('استخدام البيانات المخزنة في حالة الخطأ');
+            setSiteSettings(cachedData);
+            setError(null);
+          }
+        } catch (cacheError) {
+          console.error('فشل استخدام البيانات المخزنة أيضًا:', cacheError);
+        }
       } finally {
         setIsLoading(false);
       }
