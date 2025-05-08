@@ -127,6 +127,11 @@ export default function StaticPage({ page, error }: PageProps) {
   );
 }
 
+// استيراد قاعدة البيانات والمخططات
+import { db } from '@/db';
+import { pages as pagesTable } from '@/shared/schema';
+import { eq } from 'drizzle-orm';
+
 export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params, res }) => {
   // تعيين مدة التخزين المؤقت - 30 دقيقة للصفحات الثابتة
   res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=600');
@@ -141,11 +146,20 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
   }
   
   try {
-    // الحصول على بيانات الصفحة من API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/pages/slug/${params.slug}`);
+    const slug = params.slug;
+    console.log(`جلب بيانات الصفحة مع slug: ${slug}`);
     
-    // إذا لم يتم العثور على الصفحة
-    if (response.status === 404) {
+    // استخدام قاعدة البيانات مباشرة
+    const pageData = await db.select()
+      .from(pagesTable)
+      .where(eq(pagesTable.slug, slug))
+      .limit(1);
+    
+    console.log(`تم العثور على ${pageData.length} صفحة`);
+    
+    // التحقق من وجود الصفحة
+    if (!pageData || pageData.length === 0) {
+      console.log(`لم يتم العثور على الصفحة: ${slug}`);
       return {
         props: {
           page: null,
@@ -154,12 +168,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
       };
     }
     
-    // إذا كان هناك خطأ في الخادم
-    if (!response.ok) {
-      throw new Error(`فشل في تحميل الصفحة (${response.status})`);
-    }
-    
-    const page = await response.json();
+    const page = pageData[0];
+    console.log(`تم العثور على الصفحة بالعنوان: ${page.title}`);
     
     // التحقق من حالة نشر الصفحة
     if (!page.isPublished) {
@@ -171,9 +181,16 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params
       };
     }
     
+    // إعداد بيانات الصفحة
+    const formattedPage = {
+      ...page,
+      createdAt: page.createdAt instanceof Date ? page.createdAt.toISOString() : page.createdAt,
+      updatedAt: page.updatedAt instanceof Date ? page.updatedAt.toISOString() : page.updatedAt
+    };
+    
     return {
       props: {
-        page
+        page: formattedPage
       }
     };
   } catch (error) {
