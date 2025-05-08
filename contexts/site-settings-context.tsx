@@ -44,6 +44,17 @@ export interface SiteSettings {
     showPartnersSection: boolean;
   };
   customCss?: string;
+  
+  // حقول إضافية لدعم التوافق مع هيكل البيانات المستلمة من الخادم
+  email?: string;
+  phone?: string;
+  address?: string;
+  facebook?: string;
+  twitter?: string;
+  instagram?: string;
+  linkedin?: string;
+  youtube?: string;
+  whatsapp?: string;
 }
 
 interface SiteSettingsContextType {
@@ -111,28 +122,63 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
         
         if (data.settings) {
           console.log('تم استلام إعدادات الموقع:', data.settings);
-          // نتأكد من وجود جميع الحقول المطلوبة
-          const mergedSettings = {
-            ...defaultSiteSettings,
-            ...data.settings,
+          
+          // إعادة هيكلة البيانات المستلمة لتتوافق مع النموذج المتوقع
+          const formattedSettings: SiteSettings = {
+            siteName: data.settings.siteName || defaultSiteSettings.siteName,
+            siteDescription: data.settings.siteDescription || defaultSiteSettings.siteDescription,
+            siteTagline: data.settings.siteTagline,
+            siteEmail: data.settings.email,  // ملاحظة: الاسم مختلف في البيانات المستلمة
+            sitePhone: data.settings.phone,  // ملاحظة: الاسم مختلف في البيانات المستلمة
+            siteAddress: data.settings.address,  // ملاحظة: الاسم مختلف في البيانات المستلمة
+            logoUrl: data.settings.logo,
+            logoDarkUrl: data.settings.logoDark,
+            faviconUrl: data.settings.favicon,
+            footerText: data.settings.footerText,
+            
+            // تنظيم بيانات وسائل التواصل الاجتماعي
             socialMedia: {
-              ...defaultSiteSettings.socialMedia,
-              ...(data.settings.socialMedia || {})
+              facebook: data.settings.facebook,
+              twitter: data.settings.twitter,
+              instagram: data.settings.instagram,
+              linkedin: data.settings.linkedin,
+              youtube: data.settings.youtube,
+              whatsapp: data.settings.whatsapp
             },
+            
+            // تنظيم بيانات السمة
             theme: {
-              ...defaultSiteSettings.theme,
-              ...(data.settings.theme || {})
+              primaryColor: data.settings.primaryColor || defaultSiteSettings.theme.primaryColor,
+              secondaryColor: data.settings.secondaryColor || defaultSiteSettings.theme.secondaryColor,
+              accentColor: data.settings.accentColor || defaultSiteSettings.theme.accentColor,
+              enableDarkMode: data.settings.enableDarkMode ?? defaultSiteSettings.theme.enableDarkMode,
+              rtlDirection: data.settings.rtlDirection ?? defaultSiteSettings.theme.rtlDirection
             },
+            
+            // تنظيم بيانات التخطيط
             layout: {
-              ...defaultSiteSettings.layout,
-              ...(data.settings.layout || {})
+              homePageLayout: data.settings.homePageLayout || defaultSiteSettings.layout.homePageLayout,
+              scholarshipPageLayout: data.settings.scholarshipPageLayout || defaultSiteSettings.layout.scholarshipPageLayout,
+              articlePageLayout: data.settings.articlePageLayout || defaultSiteSettings.layout.articlePageLayout
             },
+            
+            // تنظيم بيانات الأقسام
             sections: {
-              ...defaultSiteSettings.sections,
-              ...(data.settings.sections || {})
-            }
+              showHeroSection: data.settings.showHeroSection ?? defaultSiteSettings.sections.showHeroSection,
+              showFeaturedScholarships: data.settings.showFeaturedScholarships ?? defaultSiteSettings.sections.showFeaturedScholarships,
+              showSearchSection: data.settings.showSearchSection ?? defaultSiteSettings.sections.showSearchSection,
+              showCategoriesSection: data.settings.showCategoriesSection ?? defaultSiteSettings.sections.showCategoriesSection,
+              showCountriesSection: data.settings.showCountriesSection ?? defaultSiteSettings.sections.showCountriesSection,
+              showLatestArticles: data.settings.showLatestArticles ?? defaultSiteSettings.sections.showLatestArticles,
+              showSuccessStories: data.settings.showSuccessStories ?? defaultSiteSettings.sections.showSuccessStories,
+              showNewsletterSection: data.settings.showNewsletterSection ?? defaultSiteSettings.sections.showNewsletterSection,
+              showStatisticsSection: data.settings.showStatisticsSection ?? defaultSiteSettings.sections.showStatisticsSection,
+              showPartnersSection: data.settings.showPartnersSection ?? defaultSiteSettings.sections.showPartnersSection
+            },
+            
+            customCss: data.settings.customCss
           };
-          setSiteSettings(mergedSettings);
+          setSiteSettings(formattedSettings);
         } else {
           // استخدام الإعدادات الافتراضية إذا لم يتم العثور على إعدادات
           console.log('استخدام الإعدادات الافتراضية للموقع');

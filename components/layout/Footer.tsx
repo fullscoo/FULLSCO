@@ -16,8 +16,12 @@ const menuTypeIcons: Record<string, any> = {
 };
 
 export default function Footer() {
-  const { siteSettings } = useSiteSettings();
+  const { siteSettings, isLoading: isSettingsLoading } = useSiteSettings();
   const { footerMainMenu, footerSecondaryMenu, isLoading: isMenuLoading } = useMenus();
+  
+  // للتشخيص
+  console.log('إعدادات الموقع في الفوتر:', siteSettings);
+  console.log('قائمة الفوتر الثانوية:', footerSecondaryMenu);
   
   // الحصول على السنة الحالية
   const currentYear = new Date().getFullYear();
@@ -71,9 +75,9 @@ export default function Footer() {
             
             {/* وسائل التواصل الاجتماعي */}
             <div className="flex space-x-3 rtl:space-x-reverse">
-              {siteSettings?.socialMedia?.facebook && (
+              {siteSettings?.facebook && (
                 <a 
-                  href={siteSettings.socialMedia.facebook} 
+                  href={siteSettings.facebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-600 dark:hover:bg-blue-600 rounded-md transition-colors"
@@ -85,9 +89,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.twitter && (
+              {siteSettings?.twitter && (
                 <a 
-                  href={siteSettings.socialMedia.twitter} 
+                  href={siteSettings.twitter} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-400 dark:hover:bg-blue-400 rounded-md transition-colors"
@@ -99,9 +103,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.instagram && (
+              {siteSettings?.instagram && (
                 <a 
-                  href={siteSettings.socialMedia.instagram} 
+                  href={siteSettings.instagram} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-pink-600 dark:hover:bg-pink-600 rounded-md transition-colors"
@@ -113,9 +117,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.linkedin && (
+              {siteSettings?.linkedin && (
                 <a 
-                  href={siteSettings.socialMedia.linkedin} 
+                  href={siteSettings.linkedin} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-md transition-colors"
@@ -127,9 +131,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.youtube && (
+              {siteSettings?.youtube && (
                 <a 
-                  href={siteSettings.socialMedia.youtube} 
+                  href={siteSettings.youtube} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 rounded-md transition-colors"
@@ -246,7 +250,8 @@ export default function Footer() {
               <div>
                 <h3 className="text-lg font-bold text-white mb-4">تواصل معنا</h3>
                 <ul className="space-y-3">
-                  {siteSettings?.siteEmail && (
+                  {/* البريد الإلكتروني */}
+                  {siteSettings?.siteEmail ? (
                     <li className="flex items-center gap-2">
                       <Mail className="w-5 h-5 text-blue-500" />
                       <a 
@@ -256,9 +261,20 @@ export default function Footer() {
                         {siteSettings.siteEmail}
                       </a>
                     </li>
+                  ) : siteSettings?.email && (
+                    <li className="flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-blue-500" />
+                      <a 
+                        href={`mailto:${siteSettings.email}`}
+                        className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                      >
+                        {siteSettings.email}
+                      </a>
+                    </li>
                   )}
                   
-                  {siteSettings?.sitePhone && (
+                  {/* رقم الهاتف */}
+                  {siteSettings?.sitePhone ? (
                     <li className="flex items-center gap-2">
                       <Phone className="w-5 h-5 text-blue-500" />
                       <a 
@@ -268,12 +284,28 @@ export default function Footer() {
                         {siteSettings.sitePhone}
                       </a>
                     </li>
+                  ) : siteSettings?.phone && (
+                    <li className="flex items-center gap-2">
+                      <Phone className="w-5 h-5 text-blue-500" />
+                      <a 
+                        href={`tel:${siteSettings.phone}`}
+                        className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                      >
+                        {siteSettings.phone}
+                      </a>
+                    </li>
                   )}
                   
-                  {siteSettings?.siteAddress && (
+                  {/* العنوان */}
+                  {siteSettings?.siteAddress ? (
                     <li className="flex items-start gap-2">
                       <MapPin className="w-5 h-5 text-blue-500 mt-1" />
                       <span className="text-gray-300 dark:text-gray-400">{siteSettings.siteAddress}</span>
+                    </li>
+                  ) : siteSettings?.address && (
+                    <li className="flex items-start gap-2">
+                      <MapPin className="w-5 h-5 text-blue-500 mt-1" />
+                      <span className="text-gray-300 dark:text-gray-400">{siteSettings.address}</span>
                     </li>
                   )}
                 </ul>

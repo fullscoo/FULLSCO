@@ -133,8 +133,12 @@ export function MenusProvider({ children }: { children: ReactNode }) {
         
         // معالجة بيانات قائمة الفوتر الثانوية
         const footerSecondaryData = await footerSecondaryResponse.json();
-        if (footerSecondaryData.menuItems && Array.isArray(footerSecondaryData.menuItems)) {
+        if (footerSecondaryData.menuItems && Array.isArray(footerSecondaryData.menuItems) && footerSecondaryData.menuItems.length > 0) {
           setFooterSecondaryMenu(footerSecondaryData.menuItems);
+        } else {
+          // استخدام القائمة الافتراضية إذا كانت البيانات فارغة
+          console.log('استخدام قائمة الفوتر الثانوية الافتراضية');
+          setFooterSecondaryMenu(defaultFooterSecondaryMenu);
         }
         
         // تخزين البيانات في التخزين المؤقت
