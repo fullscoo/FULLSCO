@@ -67,16 +67,16 @@ export default function Footer() {
           <div className="lg:col-span-4">
             {/* الشعار */}
             <div className="mb-6">
-              {siteSettings?.logoUrl ? (
+              {footerData.settings?.logoUrl ? (
                 <img 
-                  src={siteSettings.logoUrl} 
-                  alt={siteSettings?.siteName || ''}
+                  src={footerData.settings.logoUrl} 
+                  alt={footerData.settings?.siteName || ''}
                   className="h-12 w-auto"
                 />
-              ) : siteSettings?.siteName ? (
+              ) : footerData.settings?.siteName ? (
                 <div className="bg-gradient-to-r from-blue-600 to-blue-500 inline-block text-white px-4 py-2 rounded-lg shadow-sm">
                   <h2 className="text-xl font-bold">
-                    {siteSettings.siteName}
+                    {footerData.settings.siteName}
                   </h2>
                 </div>
               ) : (
@@ -85,17 +85,17 @@ export default function Footer() {
             </div>
             
             {/* وصف الموقع */}
-            {siteSettings?.siteDescription && (
+            {footerData.settings?.siteDescription && (
               <p className="mb-8 text-gray-400 leading-relaxed">
-                {siteSettings.siteDescription}
+                {footerData.settings.siteDescription}
               </p>
             )}
             
             {/* وسائل التواصل الاجتماعي */}
             <div className="flex space-x-3 rtl:space-x-reverse">
-              {siteSettings?.socialMedia?.facebook && (
+              {footerData.settings?.socialMedia?.facebook && (
                 <a 
-                  href={siteSettings.socialMedia.facebook} 
+                  href={footerData.settings.socialMedia.facebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-600 dark:hover:bg-blue-600 rounded-md transition-colors"
@@ -107,9 +107,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.twitter && (
+              {footerData.settings?.socialMedia?.twitter && (
                 <a 
-                  href={siteSettings.socialMedia.twitter} 
+                  href={footerData.settings.socialMedia.twitter} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-400 dark:hover:bg-blue-400 rounded-md transition-colors"
@@ -121,9 +121,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.instagram && (
+              {footerData.settings?.socialMedia?.instagram && (
                 <a 
-                  href={siteSettings.socialMedia.instagram} 
+                  href={footerData.settings.socialMedia.instagram} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-pink-600 dark:hover:bg-pink-600 rounded-md transition-colors"
@@ -135,9 +135,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.linkedin && (
+              {footerData.settings?.socialMedia?.linkedin && (
                 <a 
-                  href={siteSettings.socialMedia.linkedin} 
+                  href={footerData.settings.socialMedia.linkedin} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-md transition-colors"
@@ -149,9 +149,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.socialMedia?.youtube && (
+              {footerData.settings?.socialMedia?.youtube && (
                 <a 
-                  href={siteSettings.socialMedia.youtube} 
+                  href={footerData.settings.socialMedia.youtube} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 rounded-md transition-colors"
@@ -164,9 +164,9 @@ export default function Footer() {
               )}
               
               {/* دعم للشكل القديم لروابط وسائل التواصل الاجتماعي */}
-              {!siteSettings?.socialMedia && siteSettings?.facebook && (
+              {!footerData.settings?.socialMedia && footerData.settings?.facebook && (
                 <a 
-                  href={siteSettings.facebook} 
+                  href={footerData.settings.facebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-600 dark:hover:bg-blue-600 rounded-md transition-colors"
@@ -354,7 +354,7 @@ export default function Footer() {
           <div className="flex flex-wrap justify-between items-center gap-4">
             <div>
               <p className="text-sm text-gray-400 dark:text-gray-500">
-                &copy; {currentYear} {siteSettings?.siteName || 'FULLSCO'}. جميع الحقوق محفوظة.
+                &copy; {currentYear} {footerData.settings?.siteName || 'FULLSCO'}. {footerData.settings?.footerText || 'جميع الحقوق محفوظة.'}
               </p>
             </div>
             
