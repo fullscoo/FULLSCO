@@ -2,10 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/": "pages/index.js",
   "/api/scholarships/featured": "pages/api/scholarships/featured.js",
   "/api/posts": "pages/api/posts.js",
   "/api/success-stories": "pages/api/success-stories.js",
-  "/": "pages/index.js",
-  "/pages/[slug]": "pages/pages/[slug].js",
   "/api/site-settings": "pages/api/site-settings.js"
 }
