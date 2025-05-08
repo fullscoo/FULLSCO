@@ -32,8 +32,8 @@ export default function StaticPage({ page, error }: PageProps) {
 
   // إذا لم يتم توفير الصفحة من خلال SSR، نقوم بطلبها من الواجهة
   useEffect(() => {
-    // إذا كان لدينا بيانات الصفحة، فلا نحتاج إلى طلبها مرة أخرى
-    if (pageData || !slug || typeof slug !== 'string') return;
+    // إذا كان لدينا بيانات الصفحة أو ليس لدينا slug صالح، فلا نحتاج إلى طلبها
+    if (page || !slug || typeof slug !== 'string') return;
     
     const fetchPage = async () => {
       setIsLoading(true);
@@ -57,7 +57,7 @@ export default function StaticPage({ page, error }: PageProps) {
     };
     
     fetchPage();
-  }, [slug, pageData]);
+  }, [slug, page]);
 
   // إذا كانت الصفحة قيد التحميل
   if (isLoading) {
