@@ -110,9 +110,32 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
         const data = await response.json();
         
         if (data.settings) {
-          setSiteSettings(data.settings);
+          console.log('تم استلام إعدادات الموقع:', data.settings);
+          // نتأكد من وجود جميع الحقول المطلوبة
+          const mergedSettings = {
+            ...defaultSiteSettings,
+            ...data.settings,
+            socialMedia: {
+              ...defaultSiteSettings.socialMedia,
+              ...(data.settings.socialMedia || {})
+            },
+            theme: {
+              ...defaultSiteSettings.theme,
+              ...(data.settings.theme || {})
+            },
+            layout: {
+              ...defaultSiteSettings.layout,
+              ...(data.settings.layout || {})
+            },
+            sections: {
+              ...defaultSiteSettings.sections,
+              ...(data.settings.sections || {})
+            }
+          };
+          setSiteSettings(mergedSettings);
         } else {
           // استخدام الإعدادات الافتراضية إذا لم يتم العثور على إعدادات
+          console.log('استخدام الإعدادات الافتراضية للموقع');
           setSiteSettings(defaultSiteSettings);
         }
         

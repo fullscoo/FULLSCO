@@ -43,8 +43,9 @@ export default function LoginPage() {
         throw new Error(data.message || 'حدث خطأ أثناء تسجيل الدخول');
       }
 
-      // تسجيل الدخول بنجاح
-      router.push('/dashboard');
+      // تسجيل الدخول بنجاح - التوجيه للصفحة الرئيسية
+      console.log('تم تسجيل الدخول بنجاح:', data.user);
+      router.push('/');
     } catch (err: any) {
       setError(err.message || 'حدث خطأ في عملية تسجيل الدخول، يرجى المحاولة مرة أخرى');
     } finally {
