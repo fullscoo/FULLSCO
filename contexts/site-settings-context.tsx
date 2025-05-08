@@ -123,20 +123,21 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
         if (data.settings) {
           console.log('تم استلام إعدادات الموقع:', data.settings);
           
-          // إعادة هيكلة البيانات المستلمة لتتوافق مع النموذج المتوقع
-          const formattedSettings: SiteSettings = {
-            siteName: data.settings.siteName || defaultSiteSettings.siteName,
-            siteDescription: data.settings.siteDescription || defaultSiteSettings.siteDescription,
+          // تعيين بيانات الإعدادات مباشرة بدون تنسيق لاستخدام البيانات الحقيقية فقط
+          setSiteSettings({
+            // البيانات الأساسية
+            siteName: data.settings.siteName,
+            siteDescription: data.settings.siteDescription,
             siteTagline: data.settings.siteTagline,
-            siteEmail: data.settings.email,  // ملاحظة: الاسم مختلف في البيانات المستلمة
-            sitePhone: data.settings.phone,  // ملاحظة: الاسم مختلف في البيانات المستلمة
-            siteAddress: data.settings.address,  // ملاحظة: الاسم مختلف في البيانات المستلمة
+            siteEmail: data.settings.email,
+            sitePhone: data.settings.phone,
+            siteAddress: data.settings.address,
             logoUrl: data.settings.logo,
             logoDarkUrl: data.settings.logoDark,
             faviconUrl: data.settings.favicon,
             footerText: data.settings.footerText,
             
-            // تنظيم بيانات وسائل التواصل الاجتماعي
+            // البيانات المحسنة
             socialMedia: {
               facebook: data.settings.facebook,
               twitter: data.settings.twitter,
@@ -146,51 +147,59 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
               whatsapp: data.settings.whatsapp
             },
             
-            // تنظيم بيانات السمة
+            // السمة
             theme: {
-              primaryColor: data.settings.primaryColor || defaultSiteSettings.theme.primaryColor,
-              secondaryColor: data.settings.secondaryColor || defaultSiteSettings.theme.secondaryColor,
-              accentColor: data.settings.accentColor || defaultSiteSettings.theme.accentColor,
-              enableDarkMode: data.settings.enableDarkMode ?? defaultSiteSettings.theme.enableDarkMode,
-              rtlDirection: data.settings.rtlDirection ?? defaultSiteSettings.theme.rtlDirection
+              primaryColor: data.settings.primaryColor,
+              secondaryColor: data.settings.secondaryColor,
+              accentColor: data.settings.accentColor,
+              enableDarkMode: data.settings.enableDarkMode,
+              rtlDirection: data.settings.rtlDirection
             },
             
-            // تنظيم بيانات التخطيط
+            // التخطيط
             layout: {
-              homePageLayout: data.settings.homePageLayout || defaultSiteSettings.layout.homePageLayout,
-              scholarshipPageLayout: data.settings.scholarshipPageLayout || defaultSiteSettings.layout.scholarshipPageLayout,
-              articlePageLayout: data.settings.articlePageLayout || defaultSiteSettings.layout.articlePageLayout
+              homePageLayout: data.settings.homePageLayout,
+              scholarshipPageLayout: data.settings.scholarshipPageLayout,
+              articlePageLayout: data.settings.articlePageLayout
             },
             
-            // تنظيم بيانات الأقسام
+            // الأقسام
             sections: {
-              showHeroSection: data.settings.showHeroSection ?? defaultSiteSettings.sections.showHeroSection,
-              showFeaturedScholarships: data.settings.showFeaturedScholarships ?? defaultSiteSettings.sections.showFeaturedScholarships,
-              showSearchSection: data.settings.showSearchSection ?? defaultSiteSettings.sections.showSearchSection,
-              showCategoriesSection: data.settings.showCategoriesSection ?? defaultSiteSettings.sections.showCategoriesSection,
-              showCountriesSection: data.settings.showCountriesSection ?? defaultSiteSettings.sections.showCountriesSection,
-              showLatestArticles: data.settings.showLatestArticles ?? defaultSiteSettings.sections.showLatestArticles,
-              showSuccessStories: data.settings.showSuccessStories ?? defaultSiteSettings.sections.showSuccessStories,
-              showNewsletterSection: data.settings.showNewsletterSection ?? defaultSiteSettings.sections.showNewsletterSection,
-              showStatisticsSection: data.settings.showStatisticsSection ?? defaultSiteSettings.sections.showStatisticsSection,
-              showPartnersSection: data.settings.showPartnersSection ?? defaultSiteSettings.sections.showPartnersSection
+              showHeroSection: data.settings.showHeroSection,
+              showFeaturedScholarships: data.settings.showFeaturedScholarships,
+              showSearchSection: data.settings.showSearchSection,
+              showCategoriesSection: data.settings.showCategoriesSection,
+              showCountriesSection: data.settings.showCountriesSection,
+              showLatestArticles: data.settings.showLatestArticles,
+              showSuccessStories: data.settings.showSuccessStories,
+              showNewsletterSection: data.settings.showNewsletterSection,
+              showStatisticsSection: data.settings.showStatisticsSection,
+              showPartnersSection: data.settings.showPartnersSection
             },
             
-            customCss: data.settings.customCss
-          };
-          setSiteSettings(formattedSettings);
+            // إضافات
+            customCss: data.settings.customCss,
+            
+            // دعم الحقول البديلة
+            email: data.settings.email,
+            phone: data.settings.phone, 
+            address: data.settings.address,
+            facebook: data.settings.facebook,
+            twitter: data.settings.twitter,
+            instagram: data.settings.instagram,
+            linkedin: data.settings.linkedin,
+            youtube: data.settings.youtube,
+            whatsapp: data.settings.whatsapp
+          });
         } else {
-          // استخدام الإعدادات الافتراضية إذا لم يتم العثور على إعدادات
-          console.log('استخدام الإعدادات الافتراضية للموقع');
-          setSiteSettings(defaultSiteSettings);
+          console.error('لم يتم العثور على إعدادات في استجابة API');
+          setError('لم يتم العثور على إعدادات الموقع');
         }
         
         setError(null);
       } catch (err) {
         console.error('خطأ في جلب إعدادات الموقع:', err);
         setError('حدث خطأ أثناء جلب إعدادات الموقع');
-        // استخدام الإعدادات الافتراضية في حالة الخطأ
-        setSiteSettings(defaultSiteSettings);
       } finally {
         setIsLoading(false);
       }

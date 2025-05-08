@@ -26,22 +26,7 @@ export default function Footer() {
   // الحصول على السنة الحالية
   const currentYear = new Date().getFullYear();
   
-  // القوائم الافتراضية في حالة عدم وجود بيانات
-  const defaultMainFooterMenu = [
-    { id: 1, title: 'الرئيسية', type: 'link', url: '/', icon: Home },
-    { id: 2, title: 'المنح الدراسية', type: 'link', url: '/scholarships', icon: Award },
-    { id: 3, title: 'المقالات', type: 'link', url: '/posts', icon: FileText },
-    { id: 4, title: 'قصص النجاح', type: 'link', url: '/success-stories', icon: School },
-    { id: 5, title: 'اتصل بنا', type: 'link', url: '/contact', icon: MessageSquare }
-  ];
-  
-  const defaultSecondaryFooterMenu = [
-    { id: 1, title: 'عن المنصة', type: 'link', url: '/about', icon: User },
-    { id: 2, title: 'سياسة الخصوصية', type: 'link', url: '/privacy-policy', icon: ShieldCheck },
-    { id: 3, title: 'الشروط والأحكام', type: 'link', url: '/terms', icon: FileText },
-    { id: 4, title: 'الأسئلة الشائعة', type: 'link', url: '/faq', icon: HelpCircle },
-    { id: 5, title: 'تسجيل الدخول', type: 'link', url: '/auth/login', icon: LogIn }
-  ];
+  // لا نستخدم قوائم افتراضية لضمان عرض البيانات الحقيقية فقط
   
   return (
     <footer className="bg-slate-900 dark:bg-gray-950 text-white border-t border-slate-800/50 dark:border-gray-800/50">
@@ -55,23 +40,26 @@ export default function Footer() {
               {siteSettings?.logoUrl ? (
                 <img 
                   src={siteSettings.logoUrl} 
-                  alt={siteSettings?.siteName || 'الموقع'}
+                  alt={siteSettings?.siteName || ''}
                   className="h-12 w-auto"
                 />
-              ) : (
+              ) : siteSettings?.siteName ? (
                 <div className="bg-gradient-to-r from-blue-600 to-blue-500 inline-block text-white px-4 py-2 rounded-lg shadow-sm">
                   <h2 className="text-xl font-bold">
-                    {siteSettings?.siteName || 'FULLSCO'}
+                    {siteSettings.siteName}
                   </h2>
                 </div>
+              ) : (
+                <div className="animate-pulse bg-slate-700 h-10 w-32 rounded-lg"></div>
               )}
             </div>
             
             {/* وصف الموقع */}
-            <p className="mb-8 text-gray-400 leading-relaxed">
-              {siteSettings?.siteDescription || 
-                'منصة شاملة للمنح الدراسية والفرص التعليمية حول العالم. نساعدك على العثور على المنح الدراسية المناسبة وفقًا لاهتماماتك ومؤهلاتك.'}
-            </p>
+            {siteSettings?.siteDescription && (
+              <p className="mb-8 text-gray-400 leading-relaxed">
+                {siteSettings.siteDescription}
+              </p>
+            )}
             
             {/* وسائل التواصل الاجتماعي */}
             <div className="flex space-x-3 rtl:space-x-reverse">
