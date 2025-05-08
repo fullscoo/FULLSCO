@@ -74,25 +74,36 @@ export function MenusProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // التحقق مما إذا كانت البيانات موجودة في التخزين المؤقت
-    const cachedMenus = localStorage.getItem('menus_cache');
-    const cacheTimestamp = localStorage.getItem('menus_cache_timestamp');
+    let cachedMenus;
+    let cacheTimestamp;
     
-    // التحقق من صلاحية التخزين المؤقت (تخزين لمدة ساعة)
-    const isCacheValid = cacheTimestamp && (Date.now() - parseInt(cacheTimestamp)) < 3600000;
-    
-    if (cachedMenus && isCacheValid) {
-      try {
-        // استخدام البيانات المخزنة مؤقتًا
-        const parsedMenus = JSON.parse(cachedMenus);
-        setHeaderMenu(parsedMenus.headerMenu || defaultHeaderMenu);
-        setFooterMainMenu(parsedMenus.footerMainMenu || defaultFooterMainMenu);
-        setFooterSecondaryMenu(parsedMenus.footerSecondaryMenu || defaultFooterSecondaryMenu);
-        setIsLoading(false);
-        return;
-      } catch (error) {
-        // في حالة حدوث خطأ عند تحليل البيانات المخزنة، نتابع بجلب البيانات من الخادم
-        console.error("خطأ في تحليل البيانات المخزنة:", error);
+    // استخدام try-catch لتجنب أخطاء في بيئات لا تدعم localStorage
+    try {
+      cachedMenus = localStorage.getItem('menus_cache');
+      cacheTimestamp = localStorage.getItem('menus_cache_timestamp');
+      
+      // التحقق من صلاحية التخزين المؤقت (تخزين لمدة 24 ساعة)
+      const isCacheValid = cacheTimestamp && (Date.now() - parseInt(cacheTimestamp)) < 86400000;
+      
+      if (cachedMenus && isCacheValid) {
+        try {
+          // استخدام البيانات المخزنة مؤقتًا
+          const parsedMenus = JSON.parse(cachedMenus);
+          setHeaderMenu(parsedMenus.headerMenu || defaultHeaderMenu);
+          setFooterMainMenu(parsedMenus.footerMainMenu || defaultFooterMainMenu);
+          setFooterSecondaryMenu(parsedMenus.footerSecondaryMenu || defaultFooterSecondaryMenu);
+          setIsLoading(false);
+          console.log("تم استخدام البيانات المخزنة مؤقتاً للقوائم");
+          return;
+        } catch (error) {
+          // في حالة حدوث خطأ عند تحليل البيانات المخزنة، نتابع بجلب البيانات من الخادم
+          console.error("خطأ في تحليل البيانات المخزنة:", error);
+        }
+      } else {
+        console.log("التخزين المؤقت للقوائم غير موجود أو انتهت صلاحيته، سيتم جلب البيانات من الخادم");
       }
+    } catch (error) {
+      console.warn("لا يمكن استخدام localStorage:", error);
     }
 
     // جلب البيانات من الخادم
@@ -133,8 +144,13 @@ export function MenusProvider({ children }: { children: ReactNode }) {
           footerSecondaryMenu: footerSecondaryData.menuItems && Array.isArray(footerSecondaryData.menuItems) ? footerSecondaryData.menuItems : defaultFooterSecondaryMenu
         };
         
-        localStorage.setItem('menus_cache', JSON.stringify(menuData));
-        localStorage.setItem('menus_cache_timestamp', Date.now().toString());
+        try {
+          localStorage.setItem('menus_cache', JSON.stringify(menuData));
+          localStorage.setItem('menus_cache_timestamp', Date.now().toString());
+          console.log("تم تخزين بيانات القوائم في التخزين المؤقت بنجاح");
+        } catch (error) {
+          console.warn("لا يمكن تخزين البيانات في localStorage:", error);
+        }
       } catch (error) {
         console.error('فشل في جلب بيانات القوائم:', error);
         setError('حدث خطأ أثناء جلب بيانات القوائم');
