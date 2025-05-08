@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useSiteSettings } from '@/contexts/site-settings-context';
-import { Mail, Phone, MapPin, Heart, Send, BookOpen, User, School, Award, ShieldCheck, HelpCircle, FileText, Home, MessageSquare, LogIn } from 'lucide-react';
+import { Mail, Phone, MapPin, Heart, BookOpen, User, School, Award, ShieldCheck, HelpCircle, FileText, Home, MessageSquare, LogIn } from 'lucide-react';
 
 export default function Footer() {
   const { siteSettings } = useSiteSettings();
@@ -9,54 +9,26 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300">
-      {/* قسم النشرة الإخبارية */}
-      <div className="bg-primary/10 border-b border-primary/20 py-10">
-        <div className="container">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-right max-w-xl">
-              <h3 className="text-xl font-bold text-white mb-2">اشترك في النشرة الإخبارية</h3>
-              <p className="text-gray-300">احصل على آخر المنح الدراسية والفرص التعليمية مباشرة إلى بريدك الإلكتروني</p>
-            </div>
-            <div className="w-full md:w-auto">
-              <form className="flex">
-                <input 
-                  type="email" 
-                  placeholder="بريدك الإلكتروني" 
-                  className="flex-1 py-3 px-4 bg-white/5 border border-primary/30 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-light"
-                  required
-                />
-                <button 
-                  type="submit" 
-                  className="bg-primary text-white py-3 px-6 rounded-r-md hover:bg-primary-dark transition-colors flex items-center gap-2"
-                  aria-label="اشتراك في النشرة الإخبارية"
-                >
-                  <span>اشتراك</span>
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      
+    <footer className="bg-slate-900 dark:bg-gray-950 text-white border-t border-slate-800/50 dark:border-gray-800/50">
       {/* القسم الرئيسي */}
-      <div className="container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="container mx-auto py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8">
           {/* معلومات الموقع */}
-          <div>
+          <div className="lg:col-span-4">
             {/* الشعار */}
             <div className="mb-6">
               {siteSettings?.logoUrl ? (
                 <img 
                   src={siteSettings.logoUrl} 
                   alt={siteSettings.siteName || 'الموقع'}
-                  className="h-14 w-auto"
+                  className="h-12 w-auto"
                 />
               ) : (
-                <h2 className="text-2xl font-bold text-white">
-                  {siteSettings?.siteName || 'FULLSCO'}
-                </h2>
+                <div className="bg-gradient-to-r from-blue-600 to-blue-500 inline-block text-white px-4 py-2 rounded-lg shadow-sm">
+                  <h2 className="text-xl font-bold">
+                    {siteSettings?.siteName || 'FULLSCO'}
+                  </h2>
+                </div>
               )}
             </div>
             
@@ -73,7 +45,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.facebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-blue-600 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-600 dark:hover:bg-blue-600 rounded-md transition-colors"
                   aria-label="Facebook"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -87,7 +59,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.twitter} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-blue-400 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-400 dark:hover:bg-blue-400 rounded-md transition-colors"
                   aria-label="Twitter"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -101,7 +73,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.instagram} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-pink-600 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-pink-600 dark:hover:bg-pink-600 rounded-md transition-colors"
                   aria-label="Instagram"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -115,7 +87,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.linkedin} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-blue-700 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-md transition-colors"
                   aria-label="LinkedIn"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -129,7 +101,7 @@ export default function Footer() {
                   href={siteSettings.socialMedia.youtube} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 rounded-md transition-colors"
                   aria-label="YouTube"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -140,158 +112,142 @@ export default function Footer() {
             </div>
           </div>
           
-          {/* روابط سريعة */}
-          <div>
-            <h3 className="text-lg font-bold text-white mb-6 pb-2 border-b border-primary/20">روابط سريعة</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <Home className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>الرئيسية</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/scholarships" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <Award className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>المنح الدراسية</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/posts" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <FileText className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>المقالات</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/success-stories" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <School className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>قصص النجاح</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <MessageSquare className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>اتصل بنا</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/auth/login" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <LogIn className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>تسجيل الدخول</span>
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* روابط مفيدة */}
-          <div>
-            <h3 className="text-lg font-bold text-white mb-6 pb-2 border-b border-primary/20">روابط مفيدة</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/about" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <User className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>عن المنصة</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <ShieldCheck className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>سياسة الخصوصية</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <FileText className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>الشروط والأحكام</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <HelpCircle className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>الأسئلة الشائعة</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/sitemap" className="flex items-center text-gray-400 hover:text-primary transition-colors group">
-                  <BookOpen className="w-4 h-4 ml-2 text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  <span>خريطة الموقع</span>
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* معلومات الاتصال */}
-          <div>
-            <h3 className="text-lg font-bold text-white mb-6 pb-2 border-b border-primary/20">تواصل معنا</h3>
-            <ul className="space-y-4">
-              {siteSettings?.siteEmail && (
-                <li className="flex items-start">
-                  <div className="p-2 bg-primary/10 rounded-lg ml-3">
-                    <Mail className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-white text-sm mb-1">البريد الإلكتروني</p>
-                    <a 
-                      href={`mailto:${siteSettings.siteEmail}`}
-                      className="text-gray-400 hover:text-primary transition-colors"
-                    >
-                      {siteSettings.siteEmail}
-                    </a>
-                  </div>
-                </li>
-              )}
+          {/* روابط سريعة + معلومات الاتصال في نفس العمود للشاشات المتوسطة */}
+          <div className="lg:col-span-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* روابط سريعة */}
+              <div>
+                <h3 className="text-lg font-bold text-white mb-4">روابط سريعة</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <Link href="/" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <Home className="w-4 h-4 ml-2 opacity-70" />
+                      <span>الرئيسية</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/scholarships" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <Award className="w-4 h-4 ml-2 opacity-70" />
+                      <span>المنح الدراسية</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/posts" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <FileText className="w-4 h-4 ml-2 opacity-70" />
+                      <span>المقالات</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/success-stories" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <School className="w-4 h-4 ml-2 opacity-70" />
+                      <span>قصص النجاح</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/contact" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <MessageSquare className="w-4 h-4 ml-2 opacity-70" />
+                      <span>اتصل بنا</span>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
               
-              {siteSettings?.sitePhone && (
-                <li className="flex items-start">
-                  <div className="p-2 bg-primary/10 rounded-lg ml-3">
-                    <Phone className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-white text-sm mb-1">رقم الهاتف</p>
-                    <a 
-                      href={`tel:${siteSettings.sitePhone}`}
-                      className="text-gray-400 hover:text-primary transition-colors"
-                    >
-                      {siteSettings.sitePhone}
-                    </a>
-                  </div>
-                </li>
-              )}
+              {/* روابط مفيدة */}
+              <div>
+                <h3 className="text-lg font-bold text-white mb-4">روابط مفيدة</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <Link href="/about" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <User className="w-4 h-4 ml-2 opacity-70" />
+                      <span>عن المنصة</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/privacy-policy" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <ShieldCheck className="w-4 h-4 ml-2 opacity-70" />
+                      <span>سياسة الخصوصية</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/terms" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <FileText className="w-4 h-4 ml-2 opacity-70" />
+                      <span>الشروط والأحكام</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/faq" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <HelpCircle className="w-4 h-4 ml-2 opacity-70" />
+                      <span>الأسئلة الشائعة</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/auth/login" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                      <LogIn className="w-4 h-4 ml-2 opacity-70" />
+                      <span>تسجيل الدخول</span>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
               
-              {siteSettings?.siteAddress && (
-                <li className="flex items-start">
-                  <div className="p-2 bg-primary/10 rounded-lg ml-3">
-                    <MapPin className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-white text-sm mb-1">العنوان</p>
-                    <span className="text-gray-400">{siteSettings.siteAddress}</span>
-                  </div>
-                </li>
-              )}
-            </ul>
+              {/* معلومات الاتصال */}
+              <div>
+                <h3 className="text-lg font-bold text-white mb-4">تواصل معنا</h3>
+                <ul className="space-y-3">
+                  {siteSettings?.siteEmail && (
+                    <li className="flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-blue-500" />
+                      <a 
+                        href={`mailto:${siteSettings.siteEmail}`}
+                        className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                      >
+                        {siteSettings.siteEmail}
+                      </a>
+                    </li>
+                  )}
+                  
+                  {siteSettings?.sitePhone && (
+                    <li className="flex items-center gap-2">
+                      <Phone className="w-5 h-5 text-blue-500" />
+                      <a 
+                        href={`tel:${siteSettings.sitePhone}`}
+                        className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                      >
+                        {siteSettings.sitePhone}
+                      </a>
+                    </li>
+                  )}
+                  
+                  {siteSettings?.siteAddress && (
+                    <li className="flex items-start gap-2">
+                      <MapPin className="w-5 h-5 text-blue-500 mt-1" />
+                      <span className="text-gray-300 dark:text-gray-400">{siteSettings.siteAddress}</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
       {/* شريط حقوق النشر */}
-      <div className="border-t border-gray-800 py-8">
-        <div className="container">
+      <div className="border-t border-slate-800/40 dark:border-gray-800/40 py-6 bg-slate-950/50 dark:bg-black/30">
+        <div className="container mx-auto">
           <div className="flex flex-wrap justify-between items-center gap-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-400">
+            <div>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 &copy; {currentYear} {siteSettings?.siteName || 'FULLSCO'}. جميع الحقوق محفوظة.
               </p>
             </div>
             
-            <p className="text-sm text-gray-400 flex items-center flex-shrink-0">
+            <p className="text-sm text-gray-400 dark:text-gray-500 flex items-center">
               تم التطوير بواسطة 
-              <Heart className="mx-1 w-4 h-4 text-red-500 animate-pulse" />
+              <Heart className="mx-1 w-4 h-4 text-red-500" />
               <a 
                 href="https://github.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-white hover:text-primary transition-colors font-medium"
+                className="text-blue-400 dark:text-blue-300 hover:text-blue-300 dark:hover:text-blue-200 transition-colors font-medium"
               >
                 FULLSCO
               </a>
