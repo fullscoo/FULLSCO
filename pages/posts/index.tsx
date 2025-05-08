@@ -354,123 +354,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     
     // استخدام وحدة API الجديدة للحصول على المقالات
     let postsData: any = { posts: [], totalPosts: 0, totalPages: 0 };
+    let categoriesWithCount: Category[] = [];
     
+    // جلب المقالات
     try {
       postsData = await apiGet('posts', queryParams);
     } catch (error) {
-      console.error('API request failed:', error);
-      
-      // استعلام مباشر لقاعدة البيانات كنسخة احتياطية
-      console.log('Falling back to direct database query for posts...');
-      
-      // بناء استعلام أساسي
-      let query = db
-        .select()
-        .from(posts)
-        .where(sql`${posts.status} = 'published'`);
-      
-      // إضافة فلتر التصنيف إذا كان موجودًا
-      if (categorySlug) {
-        const categoryResult = await db
-          .select()
-          .from(categories)
-          .where(eq(categories.slug, categorySlug))
-          .limit(1);
-        
-        if (categoryResult.length > 0) {
-          const categoryId = categoryResult[0].id;
-          query = query.where(eq(posts.categoryId, categoryId));
-        }
-      }
-      
-      // إضافة فلتر البحث إذا كان موجودًا
-      if (searchQuery && searchQuery.trim() !== '') {
-        query = query.where(
-          sql`(${like(posts.title, `%${searchQuery}%`)} OR ${like(posts.content || '', `%${searchQuery}%`)})`
-        );
-      }
-      
-      // حساب إجمالي المقالات
-      const countResult = await db.select({ count: sql`COUNT(*)` }).from(query.as('filtered_posts'));
-      const totalPosts = Number(countResult[0].count) || 0;
-      const totalPages = Math.ceil(totalPosts / pageSize);
-      
-      // جلب المقالات مع الترتيب والصفحة
-      const postsResult = await query
-        .orderBy(desc(posts.createdAt))
-        .limit(pageSize)
-        .offset((currentPage - 1) * pageSize);
-      
-      // جلب بيانات التصنيف لكل مقال
-      const postsWithCategories = await Promise.all(
-        postsResult.map(async (post) => {
-          let category = null;
-          if (post.categoryId) {
-            const categoryData = await db
-              .select()
-              .from(categories)
-              .where(eq(categories.id, post.categoryId))
-              .limit(1);
-            
-            if (categoryData.length > 0) {
-              category = categoryData[0];
-            }
-          }
-          
-          return {
-            ...post,
-            category: category ? {
-              id: category.id,
-              name: category.name,
-              slug: category.slug
-            } : null
-          };
-        })
-      );
-      
-      postsData = {
-        posts: postsWithCategories,
-        totalPosts,
-        totalPages
-      };
+      console.error('API request for posts failed:', error);
     }
     
-    // جلب التصنيفات مع عدد المقالات
-    let categoriesWithCount: Category[] = [];
+    // جلب التصنيفات
     try {
-      // استخدام وحدة API الجديدة
       const categoriesData = await apiGet('categories');
       categoriesWithCount = categoriesData.categories || [];
     } catch (error) {
       console.error('API request for categories failed:', error);
-        // استعلام مباشر لقاعدة البيانات كنسخة احتياطية
-        const categoriesResult = await db
-          .select({
-            id: categories.id,
-            name: categories.name,
-            slug: categories.slug,
-            postCount: sql`(SELECT COUNT(*) FROM ${posts} WHERE ${posts.categoryId} = ${categories.id} AND ${posts.status} = 'published')`
-          })
-          .from(categories)
-          .orderBy(categories.name);
-        
-        categoriesWithCount = categoriesResult;
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      
-      // استعلام مباشر لقاعدة البيانات كنسخة احتياطية
-      const categoriesResult = await db
-        .select({
-          id: categories.id,
-          name: categories.name,
-          slug: categories.slug,
-          postCount: sql`(SELECT COUNT(*) FROM ${posts} WHERE ${posts.categoryId} = ${categories.id} AND ${posts.status} = 'published')`
-        })
-        .from(categories)
-        .orderBy(categories.name);
-      
-      categoriesWithCount = categoriesResult;
     }
     
     // تحويل البيانات إلى صيغة يمكن تمثيلها كـ JSON

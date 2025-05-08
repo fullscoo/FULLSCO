@@ -12,6 +12,8 @@
    - ✅ `contexts/site-settings-context.tsx`
    - ✅ `contexts/menus-context.tsx`
 4. ✅ تحديث استدعاءات API في الصفحة الرئيسية
+5. ✅ تحديث استدعاءات API في صفحة المقالات:
+   - ✅ `pages/posts/index.tsx`
 
 ## الملفات المستهدفة للتحديث
 
