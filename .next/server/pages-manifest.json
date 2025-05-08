@@ -2,9 +2,10 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/scholarships": "pages/scholarships.js",
   "/": "pages/index.js",
+  "/scholarships/[slug]": "pages/scholarships/[slug].js",
   "/api/scholarships/featured": "pages/api/scholarships/featured.js",
   "/api/posts": "pages/api/posts.js",
-  "/api/success-stories": "pages/api/success-stories.js",
-  "/api/site-settings": "pages/api/site-settings.js"
+  "/api/success-stories": "pages/api/success-stories.js"
 }
