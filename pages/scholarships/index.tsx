@@ -8,6 +8,7 @@ import { ScholarshipCard } from '@/components/scholarships/ScholarshipCard';
 import { Pagination } from '@/components/ui/Pagination';
 import { GraduationCap, Filter, X, Search } from 'lucide-react';
 import { useSiteSettings } from '@/contexts/site-settings-context';
+import { apiGet } from '@/lib/api';
 
 // تعريف واجهة بيانات المنحة الدراسية
 interface ScholarshipData {
@@ -225,40 +226,22 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     const fundingType = query.fundingType as string | undefined;
     const sortBy = query.sortBy as string | undefined;
     
-    // بناء استعلام API
-    let host = '';
-    if (typeof window === 'undefined') {
-      // نحن في بيئة الخادم، ونستخدم عنوان محلي
-      host = 'http://localhost:5000';
-    }
+    // استخدام وحدة API الجديدة
+    const queryParams: Record<string, any> = {
+      page,
+      limit
+    };
     
-    let queryString = '';
+    // إضافة المعلمات الاختيارية فقط إذا كانت موجودة
+    if (search) queryParams.search = search;
+    if (category) queryParams.category = category;
+    if (country) queryParams.country = country;
+    if (level) queryParams.level = level;
+    if (fundingType) queryParams.fundingType = fundingType;
+    if (sortBy) queryParams.sortBy = sortBy;
     
-    // بناء سلسلة الاستعلام يدويًا
-    const params = [];
-    if (page) params.push(`page=${page}`);
-    if (limit) params.push(`limit=${limit}`);
-    if (search) params.push(`search=${encodeURIComponent(search)}`);
-    if (category) params.push(`category=${encodeURIComponent(category)}`);
-    if (country) params.push(`country=${encodeURIComponent(country)}`);
-    if (level) params.push(`level=${encodeURIComponent(level)}`);
-    if (fundingType) params.push(`fundingType=${encodeURIComponent(fundingType)}`);
-    if (sortBy) params.push(`sortBy=${encodeURIComponent(sortBy)}`);
-    
-    if (params.length > 0) {
-      queryString = `?${params.join('&')}`;
-    }
-    
-    const apiUrl = `${host}/api/scholarships${queryString}`;
-    
-    // استدعاء API
-    const response = await fetch(apiUrl);
-    
-    if (!response.ok) {
-      throw new Error(`حدث خطأ أثناء جلب المنح الدراسية: ${response.status}`);
-    }
-    
-    const data = await response.json();
+    // استدعاء API باستخدام apiGet
+    const data = await apiGet('scholarships', queryParams);
     
     // معالجة البيانات
     return {
