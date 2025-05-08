@@ -55,7 +55,7 @@ export default function Footer() {
               {siteSettings?.logoUrl ? (
                 <img 
                   src={siteSettings.logoUrl} 
-                  alt={siteSettings.siteName || 'الموقع'}
+                  alt={siteSettings?.siteName || 'الموقع'}
                   className="h-12 w-auto"
                 />
               ) : (
@@ -75,9 +75,9 @@ export default function Footer() {
             
             {/* وسائل التواصل الاجتماعي */}
             <div className="flex space-x-3 rtl:space-x-reverse">
-              {siteSettings?.facebook && (
+              {siteSettings?.socialMedia?.facebook && (
                 <a 
-                  href={siteSettings.facebook} 
+                  href={siteSettings.socialMedia.facebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-600 dark:hover:bg-blue-600 rounded-md transition-colors"
@@ -89,9 +89,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.twitter && (
+              {siteSettings?.socialMedia?.twitter && (
                 <a 
-                  href={siteSettings.twitter} 
+                  href={siteSettings.socialMedia.twitter} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-400 dark:hover:bg-blue-400 rounded-md transition-colors"
@@ -103,9 +103,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.instagram && (
+              {siteSettings?.socialMedia?.instagram && (
                 <a 
-                  href={siteSettings.instagram} 
+                  href={siteSettings.socialMedia.instagram} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-pink-600 dark:hover:bg-pink-600 rounded-md transition-colors"
@@ -117,9 +117,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.linkedin && (
+              {siteSettings?.socialMedia?.linkedin && (
                 <a 
-                  href={siteSettings.linkedin} 
+                  href={siteSettings.socialMedia.linkedin} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-md transition-colors"
@@ -131,9 +131,9 @@ export default function Footer() {
                 </a>
               )}
               
-              {siteSettings?.youtube && (
+              {siteSettings?.socialMedia?.youtube && (
                 <a 
-                  href={siteSettings.youtube} 
+                  href={siteSettings.socialMedia.youtube} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 rounded-md transition-colors"
@@ -141,6 +141,21 @@ export default function Footer() {
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                </a>
+              )}
+              
+              {/* دعم للشكل القديم لروابط وسائل التواصل الاجتماعي */}
+              {!siteSettings?.socialMedia && siteSettings?.facebook && (
+                <a 
+                  href={siteSettings.facebook} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 flex items-center justify-center bg-slate-800 dark:bg-gray-800 hover:bg-blue-600 dark:hover:bg-blue-600 rounded-md transition-colors"
+                  aria-label="Facebook"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
                   </svg>
                 </a>
               )}
