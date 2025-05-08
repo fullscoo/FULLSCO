@@ -118,14 +118,14 @@ export function FilterComponent({
         onFilterChange(filtersToApply);
       } else {
         // تحديث استعلام URL
-        const updatedQuery = { ...router.query, page: '1' };
+        const updatedQuery = { ...router.query, page: '1' } as Record<string, string>;
         
         // إضافة الفلاتر إلى الاستعلام
-        Object.entries(filtersToApply).forEach(([key, value]) => {
+        Object.entries(filtersToApply).forEach(([key, value]: [string, string]) => {
           if (value) {
-            updatedQuery[key] = value;
+            (updatedQuery as any)[key] = value;
           } else {
-            delete updatedQuery[key];
+            delete (updatedQuery as any)[key];
           }
         });
         
@@ -302,9 +302,9 @@ export function FilterComponent({
                       <span className={filters.category === category.slug ? 'mr-2' : ''}>
                         {category.name}
                         {category.count !== undefined && (
-                          <Badge variant="secondary" className="mr-1 font-normal">
+                          <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full mr-1 font-normal">
                             {category.count}
-                          </Badge>
+                          </span>
                         )}
                       </span>
                     </button>
@@ -353,9 +353,9 @@ export function FilterComponent({
                       <span className={filters.country === country.slug ? 'mr-2' : ''}>
                         {country.name}
                         {country.count !== undefined && (
-                          <Badge variant="secondary" className="mr-1 font-normal">
+                          <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full mr-1 font-normal">
                             {country.count}
-                          </Badge>
+                          </span>
                         )}
                       </span>
                     </button>
@@ -404,9 +404,9 @@ export function FilterComponent({
                       <span className={filters.level === level.slug ? 'mr-2' : ''}>
                         {level.name}
                         {level.count !== undefined && (
-                          <Badge variant="secondary" className="mr-1 font-normal">
+                          <span className="bg-gray-200 dark:bg-gray-700 text-xs px-1.5 py-0.5 rounded-full mr-1 font-normal">
                             {level.count}
-                          </Badge>
+                          </span>
                         )}
                       </span>
                     </button>
