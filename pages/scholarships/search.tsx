@@ -9,6 +9,7 @@ import { ScholarshipCard } from '@/components/scholarships/ScholarshipCard';
 import { Pagination } from '@/components/ui/Pagination';
 import { Search, Filter, X } from 'lucide-react';
 import { useSiteSettings } from '@/contexts/site-settings-context';
+import { apiGet } from '@/lib/api';
 
 // تعريف واجهة بيانات المنحة الدراسية
 interface ScholarshipData {
@@ -233,29 +234,24 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     const fundingType = query.fundingType as string | undefined;
     const sortBy = query.sortBy as string | undefined || 'relevance';
     
-    // بناء استعلام API
-    const apiUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/scholarships`;
-    const queryParams = new URLSearchParams();
+    // استخدام وحدة API الموحدة
+    console.log("جلب بيانات البحث عن المنح الدراسية...");
     
-    queryParams.append('search', searchQuery);
-    if (page) queryParams.append('page', page.toString());
-    if (limit) queryParams.append('limit', limit.toString());
-    if (category) queryParams.append('category', category);
-    if (country) queryParams.append('country', country);
-    if (level) queryParams.append('level', level);
-    if (fundingType) queryParams.append('fundingType', fundingType);
-    if (sortBy) queryParams.append('sortBy', sortBy);
+    // إعداد معلمات الاستعلام للاستخدام في وحدة API
+    const params = {
+      search: searchQuery,
+      page: page,
+      limit: limit,
+      category: category,
+      country: country,
+      level: level,
+      fundingType: fundingType,
+      sortBy: sortBy || 'relevance'
+    };
     
-    const apiUrlWithParams = `${apiUrl}?${queryParams.toString()}`;
-    
-    // استدعاء API
-    const response = await fetch(apiUrlWithParams);
-    
-    if (!response.ok) {
-      throw new Error(`حدث خطأ أثناء جلب نتائج البحث: ${response.status}`);
-    }
-    
-    const data = await response.json();
+    // استدعاء API باستخدام وحدة API الموحدة
+    const data = await apiGet('/scholarships', params);
+    console.log(`تم العثور على ${data?.scholarships?.length || 0} منحة دراسية`);
     
     // معالجة البيانات
     return {

@@ -18,6 +18,7 @@
 6. ✅ تحديث استدعاءات API في صفحة المنح الدراسية:
    - ✅ `pages/scholarships/index.tsx`
    - ✅ `pages/scholarships/[slug].tsx`
+   - ✅ `pages/scholarships/search.tsx`
 
 ## الملفات المستهدفة للتحديث
 
