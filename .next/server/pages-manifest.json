@@ -7,6 +7,6 @@
   "/api/posts": "pages/api/posts.js",
   "/api/success-stories": "pages/api/success-stories.js",
   "/api/auth/user": "pages/api/auth/user.js",
-  "/api/site-settings": "pages/api/site-settings.js",
-  "/api/menus": "pages/api/menus.js"
+  "/api/menus": "pages/api/menus.js",
+  "/api/site-settings": "pages/api/site-settings.js"
 }

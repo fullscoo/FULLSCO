@@ -1,12 +1,91 @@
 import Link from 'next/link';
 import { useSiteSettings } from '@/contexts/site-settings-context';
-import { Mail, Phone, MapPin, Heart, BookOpen, User, School, Award, ShieldCheck, HelpCircle, FileText, Home, MessageSquare, LogIn } from 'lucide-react';
+import { Mail, Phone, MapPin, Heart, BookOpen, User, School, Award, ShieldCheck, HelpCircle, FileText, Home, MessageSquare, LogIn, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+// تخزين الأيقونات المناسبة لكل نوع من أنواع القوائم
+const menuTypeIcons: Record<string, any> = {
+  link: ExternalLink,
+  page: FileText,
+  category: Home,
+  level: Award,
+  country: Award,
+  scholarship: Award,
+  post: FileText,
+  default: FileText
+};
 
 export default function Footer() {
   const { siteSettings } = useSiteSettings();
   
   // الحصول على السنة الحالية
   const currentYear = new Date().getFullYear();
+  
+  // حالة قوائم الفوتر
+  const [mainFooterMenu, setMainFooterMenu] = useState<any[]>([]);
+  const [secondaryFooterMenu, setSecondaryFooterMenu] = useState<any[]>([]);
+  const [isMenuLoading, setIsMenuLoading] = useState<boolean>(true);
+  const [menuError, setMenuError] = useState<string | null>(null);
+  
+  // القوائم الافتراضية في حالة عدم وجود بيانات
+  const defaultMainFooterMenu = [
+    { id: 1, title: 'الرئيسية', type: 'link', url: '/', icon: Home },
+    { id: 2, title: 'المنح الدراسية', type: 'link', url: '/scholarships', icon: Award },
+    { id: 3, title: 'المقالات', type: 'link', url: '/posts', icon: FileText },
+    { id: 4, title: 'قصص النجاح', type: 'link', url: '/success-stories', icon: School },
+    { id: 5, title: 'اتصل بنا', type: 'link', url: '/contact', icon: MessageSquare }
+  ];
+  
+  const defaultSecondaryFooterMenu = [
+    { id: 1, title: 'عن المنصة', type: 'link', url: '/about', icon: User },
+    { id: 2, title: 'سياسة الخصوصية', type: 'link', url: '/privacy-policy', icon: ShieldCheck },
+    { id: 3, title: 'الشروط والأحكام', type: 'link', url: '/terms', icon: FileText },
+    { id: 4, title: 'الأسئلة الشائعة', type: 'link', url: '/faq', icon: HelpCircle },
+    { id: 5, title: 'تسجيل الدخول', type: 'link', url: '/auth/login', icon: LogIn }
+  ];
+  
+  // جلب بيانات القوائم من الخادم
+  useEffect(() => {
+    const fetchFooterMenus = async () => {
+      setIsMenuLoading(true);
+      setMenuError(null);
+      
+      try {
+        // جلب القائمة الرئيسية للفوتر
+        const mainResponse = await fetch('/api/menus?location=footer');
+        const mainData = await mainResponse.json();
+        
+        if (mainData.menuItems && Array.isArray(mainData.menuItems)) {
+          setMainFooterMenu(mainData.menuItems);
+        } else {
+          // استخدام القائمة الافتراضية في حالة عدم وجود بيانات
+          setMainFooterMenu(defaultMainFooterMenu);
+        }
+        
+        // جلب القائمة الثانوية للفوتر
+        const secondaryResponse = await fetch('/api/menus?location=footer_secondary');
+        const secondaryData = await secondaryResponse.json();
+        
+        if (secondaryData.menuItems && Array.isArray(secondaryData.menuItems)) {
+          setSecondaryFooterMenu(secondaryData.menuItems);
+        } else {
+          // استخدام القائمة الافتراضية في حالة عدم وجود بيانات
+          setSecondaryFooterMenu(defaultSecondaryFooterMenu);
+        }
+      } catch (error) {
+        console.error('فشل في جلب بيانات القوائم:', error);
+        setMenuError('حدث خطأ أثناء جلب بيانات القوائم');
+        
+        // استخدام القوائم الافتراضية في حالة حدوث خطأ
+        setMainFooterMenu(defaultMainFooterMenu);
+        setSecondaryFooterMenu(defaultSecondaryFooterMenu);
+      } finally {
+        setIsMenuLoading(false);
+      }
+    };
+    
+    fetchFooterMenus();
+  }, []);
   
   return (
     <footer className="bg-slate-900 dark:bg-gray-950 text-white border-t border-slate-800/50 dark:border-gray-800/50">
@@ -119,36 +198,33 @@ export default function Footer() {
               <div>
                 <h3 className="text-lg font-bold text-white mb-4">روابط سريعة</h3>
                 <ul className="space-y-2">
-                  <li>
-                    <Link href="/" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <Home className="w-4 h-4 ml-2 opacity-70" />
-                      <span>الرئيسية</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/scholarships" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <Award className="w-4 h-4 ml-2 opacity-70" />
-                      <span>المنح الدراسية</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/posts" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <FileText className="w-4 h-4 ml-2 opacity-70" />
-                      <span>المقالات</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/success-stories" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <School className="w-4 h-4 ml-2 opacity-70" />
-                      <span>قصص النجاح</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/contact" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <MessageSquare className="w-4 h-4 ml-2 opacity-70" />
-                      <span>اتصل بنا</span>
-                    </Link>
-                  </li>
+                  {!isMenuLoading && mainFooterMenu.map((item: any, index: number) => {
+                    // تحديد الأيقونة المناسبة ورابط الوجهة
+                    const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
+                    const href = item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`;
+                    
+                    return (
+                      <li key={index}>
+                        <Link 
+                          href={href}
+                          className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        >
+                          <IconComponent className="w-4 h-4 ml-2 opacity-70" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                  
+                  {/* في حالة تحميل البيانات، نعرض عناصر وهمية */}
+                  {isMenuLoading && defaultMainFooterMenu.map((item, index) => (
+                    <li key={index} className="animate-pulse">
+                      <div className="flex items-center">
+                        <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                        <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                      </div>
+                    </li>
+                  ))}
                 </ul>
               </div>
               
@@ -156,36 +232,33 @@ export default function Footer() {
               <div>
                 <h3 className="text-lg font-bold text-white mb-4">روابط مفيدة</h3>
                 <ul className="space-y-2">
-                  <li>
-                    <Link href="/about" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <User className="w-4 h-4 ml-2 opacity-70" />
-                      <span>عن المنصة</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/privacy-policy" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <ShieldCheck className="w-4 h-4 ml-2 opacity-70" />
-                      <span>سياسة الخصوصية</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/terms" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <FileText className="w-4 h-4 ml-2 opacity-70" />
-                      <span>الشروط والأحكام</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/faq" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <HelpCircle className="w-4 h-4 ml-2 opacity-70" />
-                      <span>الأسئلة الشائعة</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/auth/login" className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                      <LogIn className="w-4 h-4 ml-2 opacity-70" />
-                      <span>تسجيل الدخول</span>
-                    </Link>
-                  </li>
+                  {!isMenuLoading && secondaryFooterMenu.map((item: any, index: number) => {
+                    // تحديد الأيقونة المناسبة ورابط الوجهة
+                    const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
+                    const href = item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`;
+                    
+                    return (
+                      <li key={index}>
+                        <Link 
+                          href={href}
+                          className="flex items-center text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        >
+                          <IconComponent className="w-4 h-4 ml-2 opacity-70" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                  
+                  {/* في حالة تحميل البيانات، نعرض عناصر وهمية */}
+                  {isMenuLoading && defaultSecondaryFooterMenu.map((item, index) => (
+                    <li key={index} className="animate-pulse">
+                      <div className="flex items-center">
+                        <div className="w-4 h-4 ml-2 bg-gray-600 rounded opacity-50"></div>
+                        <div className="h-4 w-24 bg-gray-600 rounded opacity-50"></div>
+                      </div>
+                    </li>
+                  ))}
                 </ul>
               </div>
               
