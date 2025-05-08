@@ -6,9 +6,11 @@
 import { debug } from './utils';
 
 // الإعدادات الافتراضية
+// - على الخادم: استخدم متغير البيئة API_BASE_URL
+// - في المتصفح: استخدم المسار النسبي لأن عنوان الخادم هو نفسه
 const API_BASE_URL = typeof window !== 'undefined' 
-  ? '' // عندما نكون في المتصفح، استخدم المسار النسبي 
-  : process.env.API_BASE_URL || 'http://localhost:5000'; // على الخادم، استخدم عنوان URL كامل
+  ? (process.env.NEXT_PUBLIC_API_BASE_URL || '') // عندما نكون في المتصفح
+  : process.env.API_BASE_URL || 'http://localhost:5000'; // على الخادم
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;

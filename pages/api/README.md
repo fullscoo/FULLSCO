@@ -19,4 +19,11 @@
 ## API Endpoints
 جميع نقاط النهاية متاحة من خلال الخادم Express على المسار `/api/*`
 
-أي استدعاء API يجب أن يتم توجيهه إلى خادم Express وليس إلى Next.js API Routes.
+## خطة التحول:
+1. تم إنشاء وحدة `lib/api.ts` موحدة لاستدعاءات API للاتصال بخادم Express
+2. تم تحديث السياقات مثل `contexts/site-settings-context.tsx` و `contexts/menus-context.tsx` لاستخدام وحدة API الجديدة
+3. نحن في عملية تحديث جميع الصفحات للاتصال مباشرة بخادم Express بدلاً من Next.js API Routes
+
+## للمطورين:
+- استخدم وحدة `lib/api.ts` الجديدة لجميع طلبات API بدلاً من استدعاء `fetch` مباشرة.
+- تجنب إنشاء نقاط نهاية جديدة في `/pages/api` وبدلاً من ذلك أضفها إلى `/server/routes`.
