@@ -666,10 +666,12 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     console.log('Fetching featured scholarships from API...');
     let featuredScholarships = [];
     
+    // تحديد المسار الكامل للاتصال بـ Express API
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000';
+    
     try {
-      // استخدام واجهة API للمنح المميزة
-      // في جانب الخادم، نحتاج لعنوان مطلق
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/scholarships/featured`);
+      // استخدام طلب fetch مع المسار المطلق للخادم
+      const response = await fetch(`${API_BASE_URL}/api/scholarships/featured`);
       
       if (response.ok) {
         const data = await response.json();
@@ -791,8 +793,8 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     // جلب آخر المقالات
     let latestPosts = [];
     try {
-      // في جانب الخادم، نحتاج لعنوان مطلق
-      const postsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/posts?limit=3`);
+      // استخدام المسار الكامل للخادم
+      const postsResponse = await fetch(`${API_BASE_URL}/api/posts?limit=3`);
       if (postsResponse.ok) {
         const postsData = await postsResponse.json();
         // قد لا تحتوي الاستجابة على خاصية success
@@ -832,8 +834,8 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     // جلب قصص النجاح
     let featuredSuccessStories = [];
     try {
-      // في جانب الخادم، نحتاج لعنوان مطلق
-      const storiesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/success-stories?limit=3`);
+      // استخدام المسار الكامل للخادم
+      const storiesResponse = await fetch(`${API_BASE_URL}/api/success-stories?limit=3`);
       if (storiesResponse.ok) {
         const storiesData = await storiesResponse.json();
         // قد لا تحتوي الاستجابة على خاصية success
