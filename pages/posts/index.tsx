@@ -7,6 +7,7 @@ import { PostCard } from '@/components/posts/PostCard';
 import { db } from '@/server/db';
 import { posts, categories } from '@/shared/schema';
 import { desc, eq, like, sql } from 'drizzle-orm';
+import { apiGet } from '@/lib/api';
 
 interface Post {
   id: number;
@@ -65,13 +66,17 @@ export default function PostsPage({
     setLoading(true);
     
     try {
-      // بناء رابط API مع الفلاتر الحالية
-      let url = `/api/posts?page=${newPage}&limit=12`;
-      if (categorySlug) url += `&category=${categorySlug}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
+      // إعداد معلمات الاستعلام
+      const queryParams: Record<string, any> = {
+        page: newPage,
+        limit: 12
+      };
       
-      const response = await fetch(url);
-      const data = await response.json();
+      if (categorySlug) queryParams.category = categorySlug;
+      if (search) queryParams.search = search;
+      
+      // استخدام وحدة API الجديدة
+      const data = await apiGet('posts', queryParams);
       
       if (data.posts) {
         setPosts(data.posts);
@@ -95,12 +100,17 @@ export default function PostsPage({
     setLoading(true);
     
     try {
-      let url = `/api/posts?page=1&limit=12`;
-      if (categorySlug) url += `&category=${categorySlug}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
+      // إعداد معلمات الاستعلام
+      const queryParams: Record<string, any> = {
+        page: 1,
+        limit: 12
+      };
       
-      const response = await fetch(url);
-      const data = await response.json();
+      if (categorySlug) queryParams.category = categorySlug;
+      if (search) queryParams.search = search;
+      
+      // استخدام وحدة API الجديدة
+      const data = await apiGet('posts', queryParams);
       
       if (data.posts) {
         setPosts(data.posts);
@@ -333,18 +343,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const categorySlug = category as string | undefined;
     const searchQuery = search as string | undefined;
     
-    let apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/posts?page=${currentPage}&limit=${pageSize}`;
-    if (categorySlug) apiUrl += `&category=${categorySlug}`;
-    if (searchQuery) apiUrl += `&search=${encodeURIComponent(searchQuery)}`;
+    // إعداد معلمات الاستعلام
+    const queryParams: Record<string, any> = {
+      page: currentPage,
+      limit: pageSize
+    };
     
-    // جلب المقالات من API
-    const postsResponse = await fetch(apiUrl);
+    if (categorySlug) queryParams.category = categorySlug;
+    if (searchQuery) queryParams.search = searchQuery;
+    
+    // استخدام وحدة API الجديدة للحصول على المقالات
     let postsData: any = { posts: [], totalPosts: 0, totalPages: 0 };
     
-    if (postsResponse.ok) {
-      postsData = await postsResponse.json();
-    } else {
-      console.error(`API request failed with status ${postsResponse.status}`);
+    try {
+      postsData = await apiGet('posts', queryParams);
+    } catch (error) {
+      console.error('API request failed:', error);
       
       // استعلام مباشر لقاعدة البيانات كنسخة احتياطية
       console.log('Falling back to direct database query for posts...');
@@ -424,12 +438,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // جلب التصنيفات مع عدد المقالات
     let categoriesWithCount: Category[] = [];
     try {
-      const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/categories`);
-      
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json();
-        categoriesWithCount = categoriesData.categories || [];
-      } else {
+      // استخدام وحدة API الجديدة
+      const categoriesData = await apiGet('categories');
+      categoriesWithCount = categoriesData.categories || [];
+    } catch (error) {
+      console.error('API request for categories failed:', error);
         // استعلام مباشر لقاعدة البيانات كنسخة احتياطية
         const categoriesResult = await db
           .select({
