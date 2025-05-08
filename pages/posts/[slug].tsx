@@ -8,6 +8,7 @@ import { posts, categories } from '@/shared/schema';
 import { eq, sql } from 'drizzle-orm';
 import { formatDate } from '@/lib/utils';
 import { OptimizedImage } from '@/components/OptimizedImage';
+import { apiGet, apiPost } from '@/lib/api';
 
 interface PostDetailsProps {
   post: {
@@ -71,14 +72,14 @@ export default function PostDetailPage({ post }: PostDetailsProps) {
         viewedPosts[post.slug] = true;
         sessionStorage.setItem('viewedPosts', JSON.stringify(viewedPosts));
         
-        // تنفيذ الطلب بشكل غير متزامن
-        setTimeout(() => {
-          fetch(`/api/posts/${post.slug}/view`, { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          }).catch(error => {
+        // تنفيذ الطلب بشكل غير متزامن باستخدام وحدة API الجديدة
+        setTimeout(async () => {
+          try {
+            await apiPost(`posts/${post.slug}/view`);
+            console.log('View count updated successfully');
+          } catch (error) {
             console.error('Error updating view count:', error);
-          });
+          }
         }, 1000);
       }
     }
@@ -284,57 +285,26 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
   
   try {
-    // استخدام قاعدة البيانات مباشرة لتجنب تكرار الطلبات وتحسين الأداء
-    console.log(`Direct database query for post: ${slug}`);
+    // استخدام وحدة API الجديدة
+    console.log(`Fetching post data for: ${slug}`);
     
-    // استعلام للمقال بناءً على الاسم المستعار (slug)
-    const postResult = await db
-      .select()
-      .from(posts)
-      .where(eq(posts.slug, slug))
-      .limit(1);
+    let post = null;
     
-    if (!postResult || postResult.length === 0) {
-      console.log(`Post not found: ${slug}`);
+    try {
+      // محاولة استخدام API للحصول على المقال
+      post = await apiGet(`posts/${slug}`);
+      console.log(`Successfully fetched post data from API for: ${slug}`);
+    } catch (error) {
+      console.error(`API request failed for post: ${slug}`, error);
+      
+      // في حالة فشل API، نعيد صفحة 404
       return { notFound: true };
     }
     
-    const post = postResult[0];
-    
-    // جلب التصنيف إذا كان موجودًا
-    let category = null;
-    if (post.categoryId) {
-      const categoryResult = await db
-        .select()
-        .from(categories)
-        .where(eq(categories.id, post.categoryId))
-        .limit(1);
-      
-      if (categoryResult && categoryResult.length > 0) {
-        category = categoryResult[0];
-      }
+    if (!post) {
+      console.log(`Post not found: ${slug}`);
+      return { notFound: true };
     }
-    
-    // ملاحظة: تم نقل تحديث عدد المشاهدات إلى طلب منفصل في جانب العميل (useEffect)
-    // وذلك لتجنب التأخير في عرض الصفحة وتقليل الحمل على الخادم
-    
-    // تنسيق البيانات للعرض
-    const formattedPost = {
-      ...post,
-      category: category ? {
-        id: category.id,
-        name: category.name,
-        slug: category.slug
-      } : null,
-      imageUrl: post.imageUrl || null,
-      thumbnailUrl: post.thumbnailUrl || post.imageUrl || null,
-      authorName: post.authorName || 'كاتب المقال',
-      viewCount: post.views || 0,
-      excerpt: post.excerpt || (post.content ? post.content.substring(0, 150).replace(/<[^>]*>/g, '') + '...' : ''),
-      // ضمان توافق تنسيق التاريخ
-      createdAt: post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: post.updatedAt ? new Date(post.updatedAt).toISOString() : new Date().toISOString()
-    };
     
     // تحسين الأداء: إضافة خيار التخزين المؤقت Cache-Control
     context.res.setHeader(
@@ -345,7 +315,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // تحويل البيانات إلى صيغة يمكن تمثيلها كـ JSON
     return {
       props: {
-        post: JSON.parse(JSON.stringify(formattedPost))
+        post: JSON.parse(JSON.stringify(post))
       }
     };
   } catch (error) {
