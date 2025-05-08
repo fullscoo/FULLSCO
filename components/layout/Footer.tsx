@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useSiteSettings } from '@/contexts/site-settings-context';
 import { useMenus } from '@/contexts/menus-context';
 import { Mail, Phone, MapPin, Heart, BookOpen, User, School, Award, ShieldCheck, HelpCircle, FileText, Home, MessageSquare, LogIn, ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 // تخزين الأيقونات المناسبة لكل نوع من أنواع القوائم
 const menuTypeIcons: Record<string, any> = {
@@ -19,11 +20,38 @@ export default function Footer() {
   const { siteSettings, isLoading: isSettingsLoading } = useSiteSettings();
   const { footerMainMenu, footerSecondaryMenu, isLoading: isMenuLoading } = useMenus();
   
+  // إضافة حالة داخلية لتخزين البيانات التي تم تحميلها
+  const [footerData, setFooterData] = useState({
+    settings: null as any,
+    mainMenu: [] as any[],
+    secondaryMenu: [] as any[]
+  });
+
+  // استخدام useEffect لتحديث البيانات عندما تكون متاحة
+  useEffect(() => {
+    if (siteSettings && !isSettingsLoading) {
+      setFooterData(prev => ({
+        ...prev,
+        settings: siteSettings
+      }));
+    }
+  }, [siteSettings, isSettingsLoading]);
+
+  useEffect(() => {
+    if (footerMainMenu && footerSecondaryMenu && !isMenuLoading) {
+      setFooterData(prev => ({
+        ...prev,
+        mainMenu: footerMainMenu,
+        secondaryMenu: footerSecondaryMenu
+      }));
+    }
+  }, [footerMainMenu, footerSecondaryMenu, isMenuLoading]);
+  
   // للتشخيص المفصل
-  console.log('إعدادات الموقع في الفوتر:', siteSettings);
-  console.log('حالة التحميل لإعدادات الموقع:', isSettingsLoading);
-  console.log('قائمة الفوتر الثانوية:', footerSecondaryMenu);
-  console.log('حالة التحميل للقائمة:', isMenuLoading);
+  // console.log('إعدادات الموقع في الفوتر:', footerData.settings);
+  // console.log('حالة التحميل لإعدادات الموقع:', isSettingsLoading);
+  // console.log('قائمة الفوتر الثانوية:', footerData.secondaryMenu);
+  // console.log('حالة التحميل للقائمة:', isMenuLoading);
   
   // الحصول على السنة الحالية
   const currentYear = new Date().getFullYear();
@@ -159,7 +187,7 @@ export default function Footer() {
               <div>
                 <h3 className="text-lg font-bold text-white mb-4">روابط سريعة</h3>
                 <ul className="space-y-2">
-                  {!isMenuLoading && footerMainMenu.map((item: any, index: number) => {
+                  {!isMenuLoading && footerData.mainMenu && footerData.mainMenu.length > 0 && footerData.mainMenu.map((item: any, index: number) => {
                     // تحديد الأيقونة المناسبة ورابط الوجهة
                     const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
                     const href = item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`;
@@ -207,7 +235,7 @@ export default function Footer() {
               <div>
                 <h3 className="text-lg font-bold text-white mb-4">روابط مفيدة</h3>
                 <ul className="space-y-2">
-                  {!isMenuLoading && footerSecondaryMenu.map((item: any, index: number) => {
+                  {!isMenuLoading && footerData.secondaryMenu && footerData.secondaryMenu.length > 0 && footerData.secondaryMenu.map((item: any, index: number) => {
                     // تحديد الأيقونة المناسبة ورابط الوجهة
                     const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
                     const href = item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`;
@@ -256,61 +284,61 @@ export default function Footer() {
                 <h3 className="text-lg font-bold text-white mb-4">تواصل معنا</h3>
                 <ul className="space-y-3">
                   {/* البريد الإلكتروني */}
-                  {siteSettings?.siteEmail ? (
+                  {footerData.settings?.siteEmail ? (
                     <li className="flex items-center gap-2">
                       <Mail className="w-5 h-5 text-blue-500" />
                       <a 
-                        href={`mailto:${siteSettings.siteEmail}`}
+                        href={`mailto:${footerData.settings.siteEmail}`}
                         className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
                       >
-                        {siteSettings.siteEmail}
+                        {footerData.settings.siteEmail}
                       </a>
                     </li>
-                  ) : siteSettings?.email && (
+                  ) : footerData.settings?.email && (
                     <li className="flex items-center gap-2">
                       <Mail className="w-5 h-5 text-blue-500" />
                       <a 
-                        href={`mailto:${siteSettings.email}`}
+                        href={`mailto:${footerData.settings.email}`}
                         className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
                       >
-                        {siteSettings.email}
+                        {footerData.settings.email}
                       </a>
                     </li>
                   )}
                   
                   {/* رقم الهاتف */}
-                  {siteSettings?.sitePhone ? (
+                  {footerData.settings?.sitePhone ? (
                     <li className="flex items-center gap-2">
                       <Phone className="w-5 h-5 text-blue-500" />
                       <a 
-                        href={`tel:${siteSettings.sitePhone}`}
+                        href={`tel:${footerData.settings.sitePhone}`}
                         className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
                       >
-                        {siteSettings.sitePhone}
+                        {footerData.settings.sitePhone}
                       </a>
                     </li>
-                  ) : siteSettings?.phone && (
+                  ) : footerData.settings?.phone && (
                     <li className="flex items-center gap-2">
                       <Phone className="w-5 h-5 text-blue-500" />
                       <a 
-                        href={`tel:${siteSettings.phone}`}
+                        href={`tel:${footerData.settings.phone}`}
                         className="text-gray-300 dark:text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors"
                       >
-                        {siteSettings.phone}
+                        {footerData.settings.phone}
                       </a>
                     </li>
                   )}
                   
                   {/* العنوان */}
-                  {siteSettings?.siteAddress ? (
+                  {footerData.settings?.siteAddress ? (
                     <li className="flex items-start gap-2">
                       <MapPin className="w-5 h-5 text-blue-500 mt-1" />
-                      <span className="text-gray-300 dark:text-gray-400">{siteSettings.siteAddress}</span>
+                      <span className="text-gray-300 dark:text-gray-400">{footerData.settings.siteAddress}</span>
                     </li>
-                  ) : siteSettings?.address && (
+                  ) : footerData.settings?.address && (
                     <li className="flex items-start gap-2">
                       <MapPin className="w-5 h-5 text-blue-500 mt-1" />
-                      <span className="text-gray-300 dark:text-gray-400">{siteSettings.address}</span>
+                      <span className="text-gray-300 dark:text-gray-400">{footerData.settings.address}</span>
                     </li>
                   )}
                 </ul>
