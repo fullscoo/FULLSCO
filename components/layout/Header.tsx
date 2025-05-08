@@ -1,9 +1,21 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, ChevronDown, Sun, Moon, Search, User, LogIn, Bookmark, Bell, BookOpen, Home, Award, FileText, School, MessageSquare } from 'lucide-react';
+import { Menu, X, ChevronDown, Sun, Moon, Search, User, LogIn, Bookmark, Bell, BookOpen, Home, Award, FileText, School, MessageSquare, ExternalLink } from 'lucide-react';
 import { useSiteSettings } from '../../contexts/site-settings-context';
 import { useMobile } from '../../hooks/use-mobile';
+
+// تخزين الأيقونات المناسبة لكل نوع من أنواع القوائم
+const menuTypeIcons: Record<string, any> = {
+  link: ExternalLink,
+  page: FileText,
+  category: Home,
+  level: Award,
+  country: Award,
+  scholarship: Award,
+  post: FileText,
+  default: ChevronDown
+};
 
 export default function Header() {
   const { siteSettings } = useSiteSettings();
@@ -18,6 +30,9 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [menuData, setMenuData] = useState<any[]>([]);
+  const [isMenuLoading, setIsMenuLoading] = useState(true);
+  const [menuError, setMenuError] = useState<string | null>(null);
   
   // التحقق من وضع العرض (فاتح/داكن) عند تحميل الصفحة
   useEffect(() => {
@@ -89,6 +104,40 @@ export default function Header() {
     setIsUserMenuOpen(false);
   }, [router.pathname]);
   
+  // جلب بيانات القائمة من الخادم
+  useEffect(() => {
+    const fetchMenu = async () => {
+      setIsMenuLoading(true);
+      setMenuError(null);
+      
+      try {
+        const response = await fetch('/api/menus?location=header');
+        
+        if (!response.ok) {
+          throw new Error('فشل في جلب بيانات القائمة');
+        }
+        
+        const data = await response.json();
+        
+        if (data.menuItems && Array.isArray(data.menuItems)) {
+          setMenuData(data.menuItems);
+        } else {
+          // استخدام القائمة الافتراضية في حالة عدم وجود بيانات
+          setMenuData(defaultMenuItems);
+        }
+      } catch (error) {
+        console.error('فشل في جلب بيانات القائمة:', error);
+        setMenuError('حدث خطأ أثناء جلب بيانات القائمة');
+        // استخدام القائمة الافتراضية في حالة حدوث خطأ
+        setMenuData(defaultMenuItems);
+      } finally {
+        setIsMenuLoading(false);
+      }
+    };
+    
+    fetchMenu();
+  }, []);
+  
   // معالجة البحث
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,22 +167,25 @@ export default function Header() {
     }
   };
   
-  // عناصر القائمة
-  const menuItems = [
-    { title: 'الرئيسية', href: '/', icon: Home },
-    { title: 'المنح الدراسية', href: '/scholarships', icon: Award },
+  // القائمة الافتراضية في حالة عدم وجود بيانات من قاعدة البيانات
+  const defaultMenuItems = [
+    { id: 1, title: 'الرئيسية', type: 'link', url: '/', icon: Home, children: [] },
+    { id: 2, title: 'المنح الدراسية', type: 'link', url: '/scholarships', icon: Award, children: [] },
     { 
+      id: 3,
       title: 'التصنيفات', 
+      type: 'link',
+      url: '#',
+      icon: ChevronDown,
       children: [
-        { title: 'حسب التخصص', href: '/categories' },
-        { title: 'حسب الدولة', href: '/countries' },
-        { title: 'حسب المستوى', href: '/levels' },
-      ],
-      icon: ChevronDown
+        { id: 31, title: 'حسب التخصص', type: 'link', url: '/categories', icon: Home, children: [] },
+        { id: 32, title: 'حسب الدولة', type: 'link', url: '/countries', icon: Home, children: [] },
+        { id: 33, title: 'حسب المستوى', type: 'link', url: '/levels', icon: Home, children: [] },
+      ]
     },
-    { title: 'المقالات', href: '/posts', icon: FileText },
-    { title: 'قصص النجاح', href: '/success-stories', icon: School },
-    { title: 'اتصل بنا', href: '/contact', icon: MessageSquare },
+    { id: 4, title: 'المقالات', type: 'link', url: '/posts', icon: FileText, children: [] },
+    { id: 5, title: 'قصص النجاح', type: 'link', url: '/success-stories', icon: School, children: [] },
+    { id: 6, title: 'اتصل بنا', type: 'link', url: '/contact', icon: MessageSquare, children: [] },
   ];
   
   return (
@@ -165,8 +217,8 @@ export default function Header() {
           
           {/* القائمة الرئيسية - سطح المكتب */}
           <nav className="hidden lg:flex items-center space-x-1 rtl:space-x-reverse">
-            {menuItems.map((item, index) => (
-              item.children ? (
+            {menuData.map((item, index) => (
+              item.children && item.children.length > 0 ? (
                 <div key={index} className="relative group">
                   <button className="flex items-center px-4 py-2 text-base font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200">
                     {item.title}
@@ -174,29 +226,38 @@ export default function Header() {
                   </button>
                   <div className="absolute right-0 mt-1 w-56 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none invisible opacity-0 translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-50">
                     <div className="py-2 px-1">
-                      {item.children.map((child, childIndex) => (
-                        <Link 
-                          key={childIndex} 
-                          href={child.href}
-                          className="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md mx-1 text-gray-700 dark:text-gray-200"
-                        >
-                          {child.title}
-                        </Link>
-                      ))}
+                      {item.children.map((child: any, childIndex: number) => {
+                        const href = child.type === 'link' ? child.url : `/${child.type}s/${child.slug || ''}`;
+                        const IconComponent = menuTypeIcons[child.type] || menuTypeIcons.default;
+                        
+                        return (
+                          <Link 
+                            key={childIndex} 
+                            href={href}
+                            className="block px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md mx-1 text-gray-700 dark:text-gray-200"
+                          >
+                            {child.title}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
               ) : (
                 <Link 
                   key={index} 
-                  href={item.href}
+                  href={item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`}
                   className={`px-4 py-2 text-base font-medium rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1.5 ${
-                    router.pathname === item.href || (item.href !== '/' && router.pathname.startsWith(item.href))
+                    (item.type === 'link' && router.pathname === item.url) || 
+                    (item.type === 'link' && item.url !== '/' && router.pathname.startsWith(item.url))
                       ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 font-semibold' 
                       : 'text-gray-700 dark:text-gray-200'
                   }`}
                 >
-                  <item.icon className="h-4 w-4 opacity-70" />
+                  {(() => {
+                    const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
+                    return <IconComponent className="h-4 w-4 opacity-70" />;
+                  })()}
                   {item.title}
                 </Link>
               )
@@ -360,38 +421,48 @@ export default function Header() {
               )}
               
               <div className="py-2">
-                {menuItems.map((item, index) => (
-                  item.children ? (
+                {menuData.map((item: any, index: number) => (
+                  item.children && item.children.length > 0 ? (
                     <div key={index} className="py-2 px-4 border-b border-gray-200 dark:border-gray-700">
                       <div className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1.5">
-                        <item.icon className="h-5 w-5 text-blue-500" />
+                        {(() => {
+                          const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
+                          return <IconComponent className="h-5 w-5 text-blue-500" />;
+                        })()}
                         {item.title}
                       </div>
                       <div className="pr-8 space-y-1">
-                        {item.children.map((child, childIndex) => (
-                          <Link 
-                            key={childIndex} 
-                            href={child.href}
-                            className="block py-1.5 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                            {child.title}
-                          </Link>
-                        ))}
+                        {item.children.map((child: any, childIndex: number) => {
+                          const href = child.type === 'link' ? child.url : `/${child.type}s/${child.slug || ''}`;
+                          return (
+                            <Link 
+                              key={childIndex} 
+                              href={href}
+                              className="block py-1.5 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              {child.title}
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
                   ) : (
                     <Link 
                       key={index} 
-                      href={item.href}
+                      href={item.type === 'link' ? item.url : `/${item.type}s/${item.slug || ''}`}
                       className={`py-3 px-4 flex items-center gap-1.5 border-b border-gray-200 dark:border-gray-700 ${
-                        router.pathname === item.href || (item.href !== '/' && router.pathname.startsWith(item.href))
+                        (item.type === 'link' && router.pathname === item.url) || 
+                        (item.type === 'link' && item.url !== '/' && router.pathname.startsWith(item.url))
                           ? 'font-semibold text-blue-600 dark:text-blue-400'
                           : 'text-gray-900 dark:text-white'
                       }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <item.icon className="h-5 w-5 text-blue-500" />
+                      {(() => {
+                        const IconComponent = menuTypeIcons[item.type] || menuTypeIcons.default;
+                        return <IconComponent className="h-5 w-5 text-blue-500" />;
+                      })()}
                       {item.title}
                     </Link>
                   )
