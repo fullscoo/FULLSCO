@@ -275,6 +275,7 @@ export const pages = pgTable("pages", {
   content: text("content").notNull(),
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
+  imageUrl: text("image_url"),
   isPublished: boolean("is_published").default(true),
   showInFooter: boolean("show_in_footer").default(false),
   showInHeader: boolean("show_in_header").default(false),

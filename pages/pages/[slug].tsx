@@ -1,144 +1,207 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
 import { GetServerSideProps } from 'next';
-import { Loader2 } from 'lucide-react';
-import MainLayout from '@/components/layouts/MainLayout';
-import { Page } from '@/shared/schema';
+import Head from 'next/head';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
+
+// نوع البيانات للصفحة الثابتة
+interface Page {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  imageUrl?: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface PageProps {
   page: Page | null;
   error?: string;
 }
 
-export default function StaticPage({ page: initialPage, error: initialError }: PageProps) {
+export default function StaticPage({ page, error }: PageProps) {
   const router = useRouter();
   const { slug } = router.query;
-  
-  const [page, setPage] = useState<Page | null>(initialPage);
-  const [error, setError] = useState<string | undefined>(initialError);
-  const [loading, setLoading] = useState(!initialPage && !initialError);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pageData, setPageData] = useState<Page | null>(page);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(error);
 
+  // إذا لم يتم توفير الصفحة من خلال SSR، نقوم بطلبها من الواجهة
   useEffect(() => {
-    if (!initialPage && !initialError && slug) {
-      // إذا لم يتم تمرير بيانات الصفحة من الخادم، نقوم بجلبها من واجهة API
-      setLoading(true);
+    // إذا كان لدينا بيانات الصفحة، فلا نحتاج إلى طلبها مرة أخرى
+    if (pageData || !slug || typeof slug !== 'string') return;
+    
+    const fetchPage = async () => {
+      setIsLoading(true);
+      setErrorMessage(undefined);
       
-      fetch(`/api/pages/${slug}`)
-        .then(res => {
-          if (!res.ok) {
-            throw new Error(`حدث خطأ: ${res.status}`);
-          }
-          return res.json();
-        })
-        .then(data => {
-          setPage(data.page);
-          setError(undefined);
-        })
-        .catch(err => {
-          console.error('خطأ في جلب بيانات الصفحة:', err);
-          setError('لم نتمكن من العثور على الصفحة المطلوبة');
-          setPage(null);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [initialPage, initialError, slug]);
+      try {
+        const response = await fetch(`/api/pages/${slug}`);
+        
+        if (!response.ok) {
+          throw new Error(`فشل في تحميل الصفحة (${response.status})`);
+        }
+        
+        const data = await response.json();
+        setPageData(data);
+      } catch (err) {
+        console.error('خطأ في تحميل الصفحة:', err);
+        setErrorMessage('حدث خطأ أثناء تحميل الصفحة. يرجى المحاولة مرة أخرى لاحقاً.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPage();
+  }, [slug, pageData]);
 
-  // إظهار حالة التحميل
-  if (loading) {
+  // إذا كانت الصفحة قيد التحميل
+  if (isLoading) {
     return (
-      <MainLayout>
-        <div className="container mx-auto py-12 flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-            <p className="mt-4 text-lg text-gray-600">جاري تحميل الصفحة...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h1 className="text-xl font-medium text-gray-700 dark:text-gray-300">جاري التحميل...</h1>
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
-  // إظهار رسالة الخطأ
-  if (error || !page) {
+  // إذا كان هناك خطأ
+  if (errorMessage || !pageData) {
     return (
-      <MainLayout>
-        <Head>
-          <title>الصفحة غير موجودة | منصة المنح الدراسية</title>
-          <meta name="description" content="الصفحة المطلوبة غير موجودة" />
-        </Head>
-        <div className="container mx-auto py-12">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">عذراً!</h1>
-            <p className="text-gray-700 dark:text-gray-300 text-lg mb-6">
-              {error || 'لم نتمكن من العثور على الصفحة المطلوبة'}
-            </p>
-            <button
-              onClick={() => router.push('/')}
-              className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-colors"
-            >
-              العودة للصفحة الرئيسية
-            </button>
-          </div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            الصفحة غير موجودة
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            {errorMessage || 'لم يتم العثور على الصفحة المطلوبة. يرجى التحقق من الرابط أو الاتصال بمسؤول الموقع.'}
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-focus transition-colors"
+          >
+            العودة إلى الصفحة الرئيسية
+          </button>
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
   return (
-    <MainLayout>
+    <>
       <Head>
-        <title>{page.title} | منصة المنح الدراسية</title>
-        <meta name="description" content={page.metaDescription || `${page.title} - منصة المنح الدراسية`} />
-        {page.metaTitle && <meta property="og:title" content={page.metaTitle} />}
-        {page.metaDescription && <meta property="og:description" content={page.metaDescription} />}
+        <title>{pageData.metaTitle || pageData.title}</title>
+        <meta name="description" content={pageData.metaDescription || `${pageData.title} - منصة المنح الدراسية`} />
+        <meta property="og:title" content={pageData.metaTitle || pageData.title} />
+        <meta property="og:description" content={pageData.metaDescription || `${pageData.title} - منصة المنح الدراسية`} />
+        {pageData.imageUrl && <meta property="og:image" content={pageData.imageUrl} />}
+        <meta property="og:type" content="article" />
       </Head>
 
-      <div className="container mx-auto py-8 md:py-12">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 md:p-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">{page.title}</h1>
-          
-          <div 
-            className="prose prose-lg dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: page.content }}
-          />
+      <div className="bg-white dark:bg-gray-900">
+        <div className="container mx-auto px-4 py-12">
+          {/* عنوان الصفحة */}
+          <div className="mb-10 text-center">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              {pageData.title}
+            </h1>
+            
+            {/* خط فاصل مزخرف */}
+            <div className="flex items-center justify-center">
+              <div className="w-16 h-1 bg-primary rounded-full"></div>
+            </div>
+          </div>
+
+          {/* صورة الصفحة (إذا وجدت) */}
+          {pageData.imageUrl && (
+            <div className="mb-8 relative w-full h-64 md:h-96 rounded-lg overflow-hidden">
+              <Image 
+                src={pageData.imageUrl}
+                alt={pageData.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
+
+          {/* محتوى الصفحة */}
+          <div className="prose prose-lg dark:prose-invert max-w-none mx-auto">
+            <div dangerouslySetInnerHTML={{ __html: pageData.content }} />
+          </div>
+
+          {/* وقت التحديث */}
+          <div className="mt-12 text-sm text-gray-500 dark:text-gray-400 text-center">
+            آخر تحديث: {new Date(pageData.updatedAt).toLocaleDateString('ar-EG')}
+          </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
-  // تعيين مدة التخزين المؤقت - 10 دقائق
-  res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=300');
+export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params, res }) => {
+  // تعيين مدة التخزين المؤقت - 30 دقيقة للصفحات الثابتة
+  res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=600');
   
-  try {
-    const slug = params?.slug as string;
-    
-    // استدعاء مباشر للقاعدة البيانات
-    console.log(`Direct database query for page: ${slug}`);
-    
-    // جلب بيانات الصفحة من واجهة API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/pages/${slug}`);
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    return {
-      props: {
-        page: data.page || null
-      }
-    };
-  } catch (error) {
-    console.error('Error fetching page:', error);
+  if (!params?.slug || typeof params.slug !== 'string') {
     return {
       props: {
         page: null,
-        error: 'لم نتمكن من العثور على الصفحة المطلوبة'
+        error: 'معرف الصفحة غير صالح'
+      }
+    };
+  }
+  
+  try {
+    // الحصول على بيانات الصفحة من API
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/pages/${params.slug}`);
+    
+    // إذا لم يتم العثور على الصفحة
+    if (response.status === 404) {
+      return {
+        props: {
+          page: null,
+          error: 'الصفحة غير موجودة'
+        }
+      };
+    }
+    
+    // إذا كان هناك خطأ في الخادم
+    if (!response.ok) {
+      throw new Error(`فشل في تحميل الصفحة (${response.status})`);
+    }
+    
+    const page = await response.json();
+    
+    // التحقق من حالة نشر الصفحة
+    if (!page.isPublished) {
+      return {
+        props: {
+          page: null,
+          error: 'هذه الصفحة غير منشورة حاليًا'
+        }
+      };
+    }
+    
+    return {
+      props: {
+        page
+      }
+    };
+  } catch (error) {
+    console.error('خطأ في تحميل الصفحة:', error);
+    
+    return {
+      props: {
+        page: null,
+        error: 'حدث خطأ أثناء تحميل الصفحة. يرجى المحاولة مرة أخرى لاحقاً.'
       }
     };
   }
