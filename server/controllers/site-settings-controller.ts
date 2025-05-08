@@ -42,35 +42,15 @@ export class SiteSettingsController {
       
       // معالجة القيم المنطقية (Boolean)
       // الأصل: تحويل القيم النصية من واجهة المستخدم إلى قيم منطقية
-      let processedData: Record<string, any> = {};
-      
-      console.log('validatedData:', validatedData);
-      
-      // التحقق من صحة البيانات قبل معالجتها
-      if (validatedData && typeof validatedData === 'object') {
-        try {
-          // نسخة أكثر أمانًا للتعامل مع البيانات
-          const safeData = validatedData || {};
-          
-          // تحديث طريقة المعالجة لتجنب مشاكل null أو undefined
-          if (Object.keys(safeData).length > 0) {
-            processedData = Object.entries(safeData).reduce((result, [key, value]) => {
-              // للتعامل مع القيم المنطقية المرسلة كنصوص
-              if (typeof value === 'string' && (value === 'true' || value === 'false')) {
-                result[key] = value === 'true';
-              } else {
-                result[key] = value;
-              }
-              return result;
-            }, {} as Record<string, any>);
-          } else {
-            processedData = {}; // إرجاع كائن فارغ إذا لم تكن هناك مفاتيح
-          }
-        } catch (error) {
-          console.error('Error processing validatedData:', error);
-          processedData = { ...validatedData }; // نسخ البيانات كما هي في حالة الخطأ
+      const processedData = Object.entries(validatedData).reduce((result, [key, value]) => {
+        // للتعامل مع القيم المنطقية المرسلة كنصوص
+        if (typeof value === 'string' && (value === 'true' || value === 'false')) {
+          result[key] = value === 'true';
+        } else {
+          result[key] = value;
         }
-      }
+        return result;
+      }, {} as Record<string, any>);
       
       console.log('Updating site settings with data:', processedData);
       

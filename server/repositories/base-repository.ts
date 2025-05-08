@@ -1,15 +1,15 @@
 import { db } from "../db";
 import { eq } from "drizzle-orm";
-import { PgTable } from 'drizzle-orm/pg-core';
+import { Table } from 'drizzle-orm/pg-core';
 
 /**
  * Repository أساسي يوفر عمليات CRUD العامة
  */
 export class BaseRepository<T, InsertT> {
-  protected table: PgTable;
+  protected table: Table;
   protected idColumn: any;
 
-  constructor(table: PgTable, idColumn: any) {
+  constructor(table: Table, idColumn: any) {
     this.table = table;
     this.idColumn = idColumn;
   }
@@ -20,27 +20,12 @@ export class BaseRepository<T, InsertT> {
   async findAll(filters: Record<string, any> = {}): Promise<T[]> {
     let query = db.select().from(this.table);
 
-    // تأكد من أن filters ليس null أو undefined
-    const safeFilters = filters || {};
-    
-    // تطبيق الفلاتر إذا تم تمريرها وكانت غير فارغة
-    if (safeFilters && typeof safeFilters === 'object') {
-      // إضافة مزيد من معلومات التصحيح
-      console.log('Applying filters:', JSON.stringify(safeFilters));
-      try {
-        // تحقق إضافي قبل استخدام Object.entries
-        if (Object.keys(safeFilters).length > 0) {
-          Object.entries(safeFilters).forEach(([key, value]) => {
-            if (value !== undefined && this.table[key]) {
-              query = query.where(eq(this.table[key], value));
-            }
-          });
-        }
-      } catch (error) {
-        console.error('Error processing filters:', error);
-        // لا نفعل شيئاً، نستمر بدون فلاتر
+    // تطبيق الفلاتر إذا تم تمريرها
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && this.table[key]) {
+        query = query.where(eq(this.table[key], value));
       }
-    }
+    });
 
     return query as Promise<T[]>;
   }

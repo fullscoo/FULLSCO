@@ -1,11 +1,6 @@
-// تحديث لاستخدام neon serverless
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from 'ws';
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "../shared/schema";
-
-// تكوين neon لاستخدام WebSocket
-neonConfig.webSocketConstructor = ws;
 
 // التواصل مع قاعدة البيانات
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
